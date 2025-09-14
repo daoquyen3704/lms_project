@@ -1,11 +1,16 @@
 import React from 'react'
 import Layout from '../common/Layout'
+import Hero from '../common/Hero'
+import FeaturedCategories from '../common/FeaturedCategories'
+import FeaturedCourses from '../common/FeaturedCourses'
 
 const Home = () => {
     return (
         <div>
             <Layout>
-                <h1>Home</h1>
+                <Hero />
+                <FeaturedCategories />
+                <FeaturedCourses />
             </Layout>
         </div>
     )
