@@ -1,12 +1,14 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import { Link } from 'react-router-dom'
 import Layout from '../common/Layout'
 import { useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { apiUrl } from '../common/Config'
+import { AuthContext } from '../context/Auth'
 
 const Login = () => {
+    const { login } = useContext(AuthContext);
     const navigate = useNavigate();
     const {
         handleSubmit,
@@ -36,6 +38,7 @@ const Login = () => {
                     token: result.token,
                 }
                 localStorage.setItem("userInfoLms", JSON.stringify(userInfo));
+                login(userInfo);
                 navigate('/account/dashboard');
             } else {
                 toast.error(result.message);
