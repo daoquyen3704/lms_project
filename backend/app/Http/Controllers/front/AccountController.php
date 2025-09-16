@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
 
 class AccountController extends Controller
 {
@@ -21,7 +22,7 @@ class AccountController extends Controller
         // This will return the error messages as JSON response
         if ($validate->fails()) {
             return response()->json([
-                'status' => '400',
+                'status' => 400,
                 'message' => $validate->errors()
             ], 400);
         }
@@ -37,5 +38,38 @@ class AccountController extends Controller
             'status' => 200,
             'message' => 'Registration successful'
         ], 200);
+    }
+
+    public function authenticate(Request $request)
+    {
+        $validate = Validator::make($request->all(), [
+            'email' => 'required|string|email|max:255',
+            'password' => 'required|string|min:8',
+        ]);
+
+        // This will return the error messages as JSON response
+        if ($validate->fails()) {
+            return response()->json([
+                'status' => 400,
+                'message' => $validate->errors()
+            ], 400);
+        }
+
+        if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
+            $user = User::find(Auth::user()->id);
+            $token = $user->createToken('auth_token')->plainTextToken;
+
+            return response()->json([
+                'status' => 200,
+                'token' => $token,
+                'name' => $user->name,
+                'id' => Auth::user()->id,
+            ], 200);
+        } else {
+            return response()->json([
+                'status' => 401,
+                'message' => 'Either email or password is incorrect.'
+            ], 401);
+        }
     }
 }

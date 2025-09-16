@@ -48,6 +48,7 @@ const Register = () => {
         }
     };
 
+
     return (
         <Layout>
             <div className="container py-5 mt-5">
