@@ -1,22 +1,27 @@
-import { createContext } from "react";
-import { useState } from "react";
+import { createContext, useState } from "react";
 
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-    const userInfo = localStorage.getItem("userInfoLms");
-    const [user, setUser] = useState(userInfo);
+    // Khởi tạo user từ localStorage (nếu có)
+    const [user, setUser] = useState(() => {
+        const data = localStorage.getItem("userInfoLms");
+        return data ? JSON.parse(data) : null;
+    });
 
     const login = (userData) => {
-        setUser(user);
-    }
+        localStorage.setItem("userInfoLms", JSON.stringify(userData));
+        setUser(userData);  // ✅ cập nhật state ngay lập tức
+    };
 
     const logout = () => {
         localStorage.removeItem("userInfoLms");
         setUser(null);
-    }
+    };
 
-    return <AuthContext.Provider value={{ user, login, logout }}>
-        {children}
-    </AuthContext.Provider>
-}
+    return (
+        <AuthContext.Provider value={{ user, login, logout }}>
+            {children}
+        </AuthContext.Provider>
+    );
+};
