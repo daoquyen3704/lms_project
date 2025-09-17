@@ -13,6 +13,7 @@ import Dashboard from './components/pages/account/Dashboard'
 import { Toaster } from 'react-hot-toast'
 import { RequiredAuth } from './components/common/RequiredAuth'
 import CreateCourse from './components/pages/account/courses/CreateCourse'
+import EditCourse from './components/pages/account/courses/EditCourse'
 
 function App() {
 
@@ -41,8 +42,17 @@ function App() {
               <CreateCourse />
             </RequiredAuth>
           } />
+
+          <Route path="/account/courses/edit/:id" element={
+            <RequiredAuth>
+              <EditCourse />
+            </RequiredAuth>
+          } />
+
         </Routes>
       </BrowserRouter >
+
+
       <Toaster
         position="top-center"
         reverseOrder={false}

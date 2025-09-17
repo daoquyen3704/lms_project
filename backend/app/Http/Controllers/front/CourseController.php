@@ -3,7 +3,10 @@
 namespace App\Http\Controllers\front;
 
 use App\Http\Controllers\Controller;
+use App\Models\Category;
 use App\Models\Course;
+use App\Models\Language;
+use App\Models\Level;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -40,6 +43,21 @@ class CourseController extends Controller
             'status' => 200,
             'data' => $course,
             'message' => "Course created successfully",
+        ], 200);
+    }
+
+    // This method will return categories/levels/languages
+    public function metaData(Request $request)
+    {
+        $categories = Category::all();
+        $levels = Level::all();
+        $languages = Language::all();
+
+        return response()->json([
+            'status' => 200,
+            'categories' => $categories,
+            'levels' => $levels,
+            'languages' => $languages,
         ], 200);
     }
 }
