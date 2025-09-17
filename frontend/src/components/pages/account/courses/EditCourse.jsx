@@ -11,6 +11,7 @@ import { useContext, useState } from 'react'
 import { useParams } from 'react-router-dom'
 const EditCourse = () => {
     const params = useParams();
+    const [loading, setLoading] = useState(false);
     const { register, handleSubmit, formState: { errors }, reset } = useForm({
         defaultValues: async () => {
             const res = await fetch(`${apiUrl}/courses/${params.id}`, {
@@ -43,6 +44,7 @@ const EditCourse = () => {
     const [languages, setLanguages] = useState([]);
     const [levels, setLevels] = useState([]);
     const onSubmit = async (data) => {
+        setLoading(true);
         try {
             const res = await fetch(`${apiUrl}/courses/${params.id}`, {
                 method: "PUT",
@@ -56,7 +58,7 @@ const EditCourse = () => {
 
             const result = await res.json();
             // console.log(result);
-
+            setLoading(false);
             if (res.ok && result.status === 200) {
                 toast.success("Course updated successfully!");
             } else {
@@ -239,7 +241,10 @@ const EditCourse = () => {
                                                 </div>
 
 
-                                                <button className='btn btn-primary'>Update</button>
+                                                <button
+                                                    disabled={loading}
+                                                    className='btn btn-primary'>
+                                                    {loading == false ? 'Update' : 'Please wait...'}</button>
                                             </div>
                                         </div>
                                     </form>
