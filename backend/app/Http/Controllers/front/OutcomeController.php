@@ -75,6 +75,7 @@ class OutcomeController extends Controller
 
         return response()->json([
             'status' => 200,
+            'data' => $outcome,
             'message' => "Outcome updated successfully",
         ], 200);
     }

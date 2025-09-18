@@ -9,6 +9,7 @@ import toast from 'react-hot-toast'
 import { AuthContext } from '../../../context/Auth'
 import { useContext, useState } from 'react'
 import { useParams } from 'react-router-dom'
+import ManageOutcome from './ManageOutcome'
 const EditCourse = () => {
     const params = useParams();
     const [loading, setLoading] = useState(false);
@@ -250,7 +251,7 @@ const EditCourse = () => {
                                     </form>
                                 </div>
                                 <div className='col-md-5'>
-
+                                    <ManageOutcome />
                                 </div>
                             </div>
                         </div>
