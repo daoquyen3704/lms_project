@@ -8,6 +8,8 @@ import { FaTrashAlt } from "react-icons/fa";
 import UpdateRequirement from './UpdateRequirement';
 import { useState, useEffect } from 'react';
 import { set, useForm } from 'react-hook-form';
+import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
+
 const ManageRequirement = () => {
     const [loading, setLoading] = useState(false);
     const [requirements, setRequirements] = useState([]);
@@ -113,6 +115,43 @@ const ManageRequirement = () => {
     useEffect(() => {
         fetchRequirements();
     }, []);
+
+    const handleDragEnd = (result) => {
+        if (!result.destination) return;
+
+        const reorderedItems = Array.from(requirements);
+        const [movedItem] = reorderedItems.splice(result.source.index, 1);
+        reorderedItems.splice(result.destination.index, 0, movedItem);
+
+        setRequirements(reorderedItems);
+        saveOrder(reorderedItems);
+    };
+
+    const saveOrder = async (updateRequirements) => {
+        try {
+            const res = await fetch(`${apiUrl}/sort-requirements`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify({ requirements: updateRequirements }),
+
+            });
+            const result = await res.json();
+            // console.log(result);
+            if (res.ok && result.status === 200) {
+                toast.success("Save requirement successfully!");
+            } else {
+                toast.error(result.message);
+            }
+        }
+        catch (error) {
+            console.error("Register error:", error);
+            toast.error("Lỗi kết nối server!");
+        }
+    }
     return (
         <>
             <div className='card shadow-lg border-0 mt-3'>
@@ -141,7 +180,46 @@ const ManageRequirement = () => {
                             {loading == false ? 'Save' : 'Please wait...'}
                         </button>
                     </form>
-                    {
+
+                    <DragDropContext onDragEnd={handleDragEnd} >
+                        <Droppable droppableId="list">
+                            {(provided) => (
+                                <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-2">
+                                    {
+                                        requirements.map((requirement, index) => (
+                                            <Draggable key={requirement.id} draggableId={`${requirement.id}`} index={index}>
+
+                                                {(provided) => (
+                                                    <div
+                                                        ref={provided.innerRef}
+                                                        {...provided.draggableProps}
+                                                        {...provided.dragHandleProps}
+                                                        className="mt-2 border bg-white shadow-lg  rounded"
+                                                    >
+                                                        <div className='card-body p-2 d-flex'>
+                                                            <div><MdDragIndicator /></div>
+                                                            <div className='d-flex justify-content-between w-100'>
+                                                                <div className='ps-2'>
+                                                                    {requirement.text}
+                                                                </div>
+                                                                <div className='d-flex'>
+                                                                    <Link onClick={() => handleShow(requirement)} className='text-primary me-1'><BsPencilSquare /></Link>
+                                                                    <Link onClick={() => deleteRequirement(requirement.id)} className='text-danger'><FaTrashAlt /></Link>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                    </div>
+                                                )}
+                                            </Draggable>
+                                        ))}
+                                    {provided.placeholder}
+                                </div>
+                            )}
+                        </Droppable>
+                    </DragDropContext>
+
+                    {/* {
                         requirements && requirements.map((requirement) => {
                             return (
                                 <div key={`requirement - ${requirement.id}`} className='card shadow mb-2' >
@@ -160,7 +238,7 @@ const ManageRequirement = () => {
                                 </div>
                             )
                         })
-                    }
+                    } */}
 
                 </div>
             </div >
