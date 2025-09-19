@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\front\AccountController;
 use App\Http\Controllers\front\CourseController;
 use App\Http\Controllers\front\OutcomeController;
+use App\Http\Controllers\front\RequirementController;
 
 Route::post('/register', [AccountController::class, 'register']);
 Route::post('/login', [AccountController::class, 'authenticate']);
@@ -25,4 +26,9 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('/outcomes', [OutcomeController::class, 'store']);
     Route::put('/outcomes/{id}', [OutcomeController::class, 'update']);
     Route::delete('/outcomes/{id}', [OutcomeController::class, 'delete']);
+
+    Route::get('/requirements', [RequirementController::class, 'index']);
+    Route::post('/requirements', [RequirementController::class, 'store']);
+    Route::put('/requirements/{id}', [RequirementController::class, 'update']);
+    Route::delete('/requirements/{id}', [RequirementController::class, 'delete']);
 });

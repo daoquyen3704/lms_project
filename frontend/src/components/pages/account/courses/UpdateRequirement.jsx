@@ -1,17 +1,18 @@
-import React, { useEffect } from 'react'
-import { Modal, Button } from 'react-bootstrap';
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { apiUrl, token } from '../../../common/Config';
-import toast from 'react-hot-toast';
-const UpdateOutcome = ({ showOutcome, handleClose, outcomes, setOutcomes, outcomeData }) => {
+import React from 'react'
+import { useState, useEffect } from 'react'
+import { useForm } from 'react-hook-form'
+import { Link, useParams } from 'react-router-dom'
+import { apiUrl, token } from '../../../common/Config'
+import toast from 'react-hot-toast'
+import { Modal } from 'react-bootstrap'
+const UpdateRequirement = ({ showRequirement, handleClose, requirements, setRequirements, requirementData }) => {
     const { register, handleSubmit, formState: { errors }, reset } = useForm();
     const [loading, setLoading] = useState(false);
 
     const onSubmit = async (data) => {
         setLoading(true);
         try {
-            const res = await fetch(`${apiUrl}/outcomes/${outcomeData.id}`, {
+            const res = await fetch(`${apiUrl}/requirements/${requirementData.id}`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
@@ -25,10 +26,10 @@ const UpdateOutcome = ({ showOutcome, handleClose, outcomes, setOutcomes, outcom
             // console.log(result);
             setLoading(false);
             if (res.ok && result.status === 200) {
-                toast.success("Outcome updated successfully!");
-                setOutcomes((prev) =>
+                toast.success("Requirement updated successfully!");
+                setRequirements((prev) =>
                     prev.map((item) =>
-                        item.id === outcomeData.id ? { ...item, text: data.outcome } : item
+                        item.id === requirementData.id ? { ...item, text: data.requirement } : item
                     )
                 );
                 handleClose();
@@ -44,32 +45,32 @@ const UpdateOutcome = ({ showOutcome, handleClose, outcomes, setOutcomes, outcom
     };
 
     useEffect(() => {
-        if (outcomeData) {
+        if (requirementData) {
             reset({
-                outcome: outcomeData.text
+                requirement: requirementData.text
             })
         }
-    }, [outcomeData]);
+    }, [requirementData]);
     return (
         <>
-            <Modal size='lg' show={showOutcome} onHide={handleClose}>
+            <Modal size='lg' show={showRequirement} onHide={handleClose}>
                 <form onSubmit={handleSubmit(onSubmit)}>
                     <Modal.Header closeButton>
-                        <Modal.Title>Update Outcome</Modal.Title>
+                        <Modal.Title>Update Requirement</Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
                         <div className='mb-3'>
-                            <label htmlFor="" className='form-label'>Outcome</label>
+                            <label htmlFor="" className='form-label'>Requirement</label>
                             <input
                                 {
-                                ...register('outcome', { required: "The outcome is required" })
+                                ...register('requirement', { required: "The requirement is required" })
                                 }
                                 type="text"
-                                className={`form-control ${errors.outcome ? 'is-invalid' : ''}`}
-                                placeholder='Outcome' />
+                                className={`form-control ${errors.requirement ? 'is-invalid' : ''}`}
+                                placeholder='Requirement' />
                             {
-                                errors.outcome &&
-                                <p className='invalid-feedback'>{errors.outcome.message}</p>
+                                errors.requirement &&
+                                <p className='invalid-feedback'>{errors.requirement.message}</p>
                             }
                         </div>
                     </Modal.Body>
@@ -85,8 +86,7 @@ const UpdateOutcome = ({ showOutcome, handleClose, outcomes, setOutcomes, outcom
 
             </Modal>
         </>
-
     )
 }
 
-export default UpdateOutcome
+export default UpdateRequirement

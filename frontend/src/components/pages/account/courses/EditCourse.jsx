@@ -10,6 +10,7 @@ import { AuthContext } from '../../../context/Auth'
 import { useContext, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import ManageOutcome from './ManageOutcome'
+import ManageRequirement from './ManageRequirement'
 const EditCourse = () => {
     const params = useParams();
     const [loading, setLoading] = useState(false);
@@ -252,6 +253,7 @@ const EditCourse = () => {
                                 </div>
                                 <div className='col-md-5'>
                                     <ManageOutcome />
+                                    <ManageRequirement />
                                 </div>
                             </div>
                         </div>
