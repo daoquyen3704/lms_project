@@ -219,26 +219,7 @@ const ManageRequirement = () => {
                         </Droppable>
                     </DragDropContext>
 
-                    {/* {
-                        requirements && requirements.map((requirement) => {
-                            return (
-                                <div key={`requirement - ${requirement.id}`} className='card shadow mb-2' >
-                                    <div className='card-body p-2 d-flex'>
-                                        <div><MdDragIndicator /></div>
-                                        <div className='d-flex justify-content-between w-100'>
-                                            <div className='ps-2'>
-                                                {requirement.text}
-                                            </div>
-                                            <div className='d-flex'>
-                                                <Link onClick={() => handleShow(requirement)} className='text-primary me-1'><BsPencilSquare /></Link>
-                                                <Link onClick={() => deleteRequirement(requirement.id)} className='text-danger'><FaTrashAlt /></Link>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            )
-                        })
-                    } */}
+
 
                 </div>
             </div >

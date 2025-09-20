@@ -11,8 +11,10 @@ import { useContext, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import ManageOutcome from './ManageOutcome'
 import ManageRequirement from './ManageRequirement'
+import EditCover from './EditCover'
 const EditCourse = () => {
     const params = useParams();
+    const [course, setCourse] = useState([]);
     const [loading, setLoading] = useState(false);
     const { register, handleSubmit, formState: { errors }, reset } = useForm({
         defaultValues: async () => {
@@ -35,6 +37,7 @@ const EditCourse = () => {
                     sell_price: result.data.price,
                     cross_price: result.data.cross_price
                 })
+                setCourse(result.data);
             }
             else {
                 toast.error(result.message);
@@ -254,6 +257,10 @@ const EditCourse = () => {
                                 <div className='col-md-5'>
                                     <ManageOutcome />
                                     <ManageRequirement />
+                                    <EditCover
+                                        course={course}
+                                        setCourse={setCourse}
+                                    />
                                 </div>
                             </div>
                         </div>

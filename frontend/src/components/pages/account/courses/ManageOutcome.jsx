@@ -216,26 +216,7 @@ const ManageOutcome = () => {
                             )}
                         </Droppable>
                     </DragDropContext>
-                    {
-                        // outcomes && outcomes.map((outcome) => {
-                        //     return (
-                        //         <div key={`outcome - ${outcome.id}`} className='card shadow mb-2' >
-                        //             <div className='card-body p-2 d-flex'>
-                        //                 <div><MdDragIndicator /></div>
-                        //                 <div className='d-flex justify-content-between w-100'>
-                        //                     <div className='ps-2'>
-                        //                         {outcome.text}
-                        //                     </div>
-                        //                     <div className='d-flex'>
-                        //                         <Link onClick={() => handleShow(outcome)} className='text-primary me-1'><BsPencilSquare /></Link>
-                        //                         <Link onClick={() => deleteOutcome(outcome.id)} className='text-danger'><FaTrashAlt /></Link>
-                        //                     </div>
-                        //                 </div>
-                        //             </div>
-                        //         </div>
-                        //     )
-                        // })
-                    }
+
 
                 </div>
             </div >
