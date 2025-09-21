@@ -12,6 +12,7 @@ import { useParams } from 'react-router-dom'
 import ManageOutcome from './ManageOutcome'
 import ManageRequirement from './ManageRequirement'
 import EditCover from './EditCover'
+import ManageChapter from './ManageChapter'
 const EditCourse = () => {
     const params = useParams();
     const [course, setCourse] = useState([]);
@@ -251,8 +252,14 @@ const EditCourse = () => {
                                                     className='btn btn-primary'>
                                                     {loading == false ? 'Update' : 'Please wait...'}</button>
                                             </div>
+
+
                                         </div>
                                     </form>
+                                    <ManageChapter
+                                        course={course}
+                                        params={params}
+                                    />
                                 </div>
                                 <div className='col-md-5'>
                                     <ManageOutcome />
