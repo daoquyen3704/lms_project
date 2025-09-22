@@ -9,6 +9,7 @@ import UpdateRequirement from './UpdateRequirement';
 import { useState, useEffect } from 'react';
 import { set, useForm } from 'react-hook-form';
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
+import { deleteConfirm } from '../../../../utils/deleteConfirm';
 
 const ManageRequirement = () => {
     const [loading, setLoading] = useState(false);
@@ -82,34 +83,11 @@ const ManageRequirement = () => {
     };
 
     const deleteRequirement = async (id) => {
-        try {
-            if (confirm("Are you sure you want to delete this requirement?")) {
-                const res = await fetch(`${apiUrl}/requirements/${id}`, {
-                    method: "DELETE",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Accept": "application/json",
-                        "Authorization": `Bearer ${token}`
-                    }
-
-                });
-                const result = await res.json();
-                // console.log(result);
-                if (res.ok && result.status === 200) {
-                    // const newOutcomes = outcomes.filter((outcome) => outcome.id !== id);
-                    fetchRequirements();
-                    toast.success("Delete requirement successfully!");
-                } else {
-                    toast.error(result.message);
-                }
-            }
-
+        const { success } = await deleteConfirm(`/requirements/${id}`);
+        if (success) {
+            fetchRequirements(); // gọi lại API load list
+            toast.success("Delete requirement successfully!");
         }
-        catch (error) {
-            console.error("Register error:", error);
-            toast.error("Lỗi kết nối server!");
-        }
-
     };
 
     useEffect(() => {

@@ -10,6 +10,8 @@ import { FaTrashAlt } from "react-icons/fa";
 import { Modal, Button } from 'react-bootstrap';
 import UpdateOutcome from './UpdateOutcome';
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
+import { deleteConfirm } from '../../../../utils/deleteConfirm';
+
 
 const ManageOutcome = () => {
     const [loading, setLoading] = useState(false);
@@ -85,34 +87,11 @@ const ManageOutcome = () => {
     }, []);
 
     const deleteOutcome = async (id) => {
-        try {
-            if (confirm("Are you sure you want to delete this outcome?")) {
-                const res = await fetch(`${apiUrl}/outcomes/${id}`, {
-                    method: "DELETE",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Accept": "application/json",
-                        "Authorization": `Bearer ${token}`
-                    }
-
-                });
-                const result = await res.json();
-                // console.log(result);
-                if (res.ok && result.status === 200) {
-                    const newOutcomes = outcomes.filter((outcome) => outcome.id !== id);
-                    toast.success("Delete outcome successfully!");
-                    fetchOutcomes();
-                } else {
-                    toast.error(result.message);
-                }
-            }
-
+        const { success } = await deleteConfirm(`/outcomes/${id}`);
+        if (success) {
+            toast.success("Delete outcome successfully!");
+            fetchOutcomes();
         }
-        catch (error) {
-            console.error("Register error:", error);
-            toast.error("Lỗi kết nối server!");
-        }
-
     };
 
     const handleDragEnd = (result) => {

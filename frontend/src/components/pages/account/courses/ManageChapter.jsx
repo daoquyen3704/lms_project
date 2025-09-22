@@ -4,7 +4,10 @@ import { apiUrl, token } from '../../../common/Config';
 import toast from "react-hot-toast";
 import Accordion from 'react-bootstrap/Accordion';
 import UpdateChapter from './UpdateChapter';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
+import { deleteConfirm } from '../../../../utils/deleteConfirm';
+import CreateLesson from './CreateLesson';
+import { FaPlus } from "react-icons/fa6";
 
 const ManageChapter = ({ course }) => {
     const { register, handleSubmit, formState: { errors }, reset } = useForm();
@@ -12,11 +15,19 @@ const ManageChapter = ({ course }) => {
     const [loading, setLoading] = useState(false);
     const params = useParams();
 
+    // Update chapter modal
     const [showChapter, setShowChapter] = useState(false);
     const handleClose = () => setShowChapter(false);
     const handleShow = (chapter) => {
         setChapterData(chapter);
         setShowChapter(true);
+    };
+
+    // Create lesson modal
+    const [showLessonModal, setShowLessonModal] = useState(false);
+    const handleCloseLessonModal = () => setShowLessonModal(false);
+    const handleShowLessonModal = (chapter) => {
+        setShowLessonModal(true);
     };
     const chapterReducer = (state, action) => {
         switch (action.type) {
@@ -60,7 +71,7 @@ const ManageChapter = ({ course }) => {
             if (res.ok && result.status === 200) {
                 toast.success("Create chapter successfully!");
                 setChapters({ type: "ADD_CHAPTER", payload: result.data });
-
+                reset({ chapter: "" });
             } else {
                 toast.error(result.message);
             }
@@ -72,6 +83,13 @@ const ManageChapter = ({ course }) => {
 
     };
 
+    const handleDelete = async (id) => {
+        const { success } = await deleteConfirm(`/chapters/${id}`);
+        if (success) {
+            toast.success("Delete chapter successfully!");
+            setChapters({ type: "DELETE_CHAPTER", payload: id });
+        }
+    };
     useEffect(() => {
         if (course.chapters) {
             setChapters({ type: "SET_CHAPTERS", payload: course.chapters });
@@ -82,7 +100,10 @@ const ManageChapter = ({ course }) => {
             <div className='card shadow-lg border-0 mt-3'>
                 <div className='card-body p-4'>
                     <div className='d-flex justify-content-between'>
-                        <h4 className='h5 mb-3'>Chapter</h4>
+                        <div className='d-flex justify-content-between w-100'>
+                            <h4 className='h5 mb-3'>Chapter</h4>
+                            <Link onClick={() => handleShowLessonModal(chapterData)} className=''><FaPlus size={12} /> <strong>Add Lesson</strong></Link>
+                        </div>
                     </div>
                     <form className='mb-4' onSubmit={handleSubmit(onSubmit)}>
                         <div className='mb-3'>
@@ -114,7 +135,9 @@ const ManageChapter = ({ course }) => {
                                         <Accordion.Header>{chapter.title}</Accordion.Header>
                                         <Accordion.Body>
                                             <div className='d-flex'>
-                                                <button className='btn btn-danger btn-sm'>
+                                                <button
+                                                    onClick={() => handleDelete(chapter.id)}
+                                                    className='btn btn-danger btn-sm'>
                                                     Delete Chapter
                                                 </button>
                                                 <button
@@ -135,6 +158,12 @@ const ManageChapter = ({ course }) => {
                         showChapter={showChapter}
                         handleClose={handleClose}
                         setChapters={setChapters}
+                    />
+
+                    <CreateLesson
+                        showLessonModal={showLessonModal}
+                        handleCloseLessonModal={handleCloseLessonModal}
+                        course={course}
                     />
                 </div>
 
