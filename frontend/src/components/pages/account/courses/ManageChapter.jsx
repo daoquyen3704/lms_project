@@ -7,7 +7,9 @@ import UpdateChapter from './UpdateChapter';
 import { Link, useParams } from 'react-router-dom';
 import { deleteConfirm } from '../../../../utils/deleteConfirm';
 import CreateLesson from './CreateLesson';
-import { FaPlus } from "react-icons/fa6";
+import { FaPlus, FaTrash } from "react-icons/fa6";
+import { BsPencilSquare } from 'react-icons/bs';
+import { FaTrashAlt } from 'react-icons/fa';
 
 const ManageChapter = ({ course }) => {
     const { register, handleSubmit, formState: { errors }, reset } = useForm();
@@ -95,6 +97,13 @@ const ManageChapter = ({ course }) => {
             setChapters({ type: "SET_CHAPTERS", payload: course.chapters });
         }
     }, [course]);
+    const handleDeleteLesson = async (id) => {
+        const { success } = await deleteConfirm(`/lessons/${id}`);
+        if (success) {
+            toast.success("Delete lesson successfully!");
+            setChapters({ type: "DELETE_CHAPTER", payload: id });
+        }
+    }
     return (
         <>
             <div className='card shadow-lg border-0 mt-3'>
@@ -134,19 +143,69 @@ const ManageChapter = ({ course }) => {
                                     <Accordion.Item key={chapter.id} eventKey={index}>
                                         <Accordion.Header>{chapter.title}</Accordion.Header>
                                         <Accordion.Body>
-                                            <div className='d-flex'>
-                                                <button
-                                                    onClick={() => handleDelete(chapter.id)}
-                                                    className='btn btn-danger btn-sm'>
-                                                    Delete Chapter
-                                                </button>
-                                                <button
-                                                    onClick={() => handleShow(chapter)}
-                                                    className='btn btn-primary btn-sm ms-2'>
-                                                    Update Chapter
-                                                </button>
+                                            <div className="row">
+                                                <div className="col-md-12">
+                                                    <div className="d-flex justify-content-between mb-2 mt-4">
+                                                        <h4 className="h5">Lessons</h4>
+                                                        <a className="h6" href="#">
+                                                            <strong>Reorder Lessons</strong>
+                                                        </a>
+                                                    </div>
+                                                </div>
+
+                                                <div className="col-md-12">
+                                                    {chapter.lessons && chapter.lessons.map((lesson, index) => (
+                                                        <div
+                                                            key={index}
+                                                            className="d-flex mt-2 border bg-white shadow-lg rounded"
+                                                        >
+                                                            {/* Left: Lesson title */}
+                                                            <div className="col-md-7 px-3 py-2 d-flex align-items-center">
+                                                                {lesson.title}
+                                                            </div>
+
+                                                            {/* Right: duration + preview + actions */}
+                                                            <div className="col-md-5 px-3 py-2 d-flex justify-content-end align-items-center text-end">
+                                                                {lesson.duration > 0 && (
+                                                                    <small className="fw-bold text-muted me-1 mb-0">
+                                                                        {lesson.duration}mins
+                                                                    </small>
+                                                                )}
+
+                                                                {lesson.is_free_preview === "yes" && (
+                                                                    <span className="badge bg-success">Preview</span>
+                                                                )}
+
+                                                                <Link to={`/account/courses/edit-lesson/${lesson.id}/${course.id}`} className="ms-1 text-primary">
+                                                                    <BsPencilSquare />
+                                                                </Link>
+                                                                <Link onClick={() => handleDeleteLesson(lesson.id)} className="ms-1 text-danger">
+                                                                    <FaTrashAlt />
+                                                                </Link>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+
+                                                <div className="col-md-12">
+                                                    <div className="d-flex mt-3">
+                                                        <button
+                                                            onClick={() => handleDelete(chapter.id)}
+                                                            className="btn btn-danger btn-sm"
+                                                        >
+                                                            Delete Chapter
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleShow(chapter)}
+                                                            className="btn btn-primary btn-sm ms-2"
+                                                        >
+                                                            Update Chapter
+                                                        </button>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </Accordion.Body>
+
                                     </Accordion.Item>
                                 )
                             })

@@ -44,7 +44,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::delete('/chapters/{id}', [ChapterController::class, 'delete']);
     Route::post('/sort-chapters', [ChapterController::class, 'sortChapter']);
 
-    // Route::get('/lessons', [LessonController::class, 'index']);
+    Route::get('/lessons/{id}', [LessonController::class, 'show']);
     Route::post('/lessons', [LessonController::class, 'store']);
     Route::put('/lessons/{id}', [LessonController::class, 'update']);
     Route::delete('/lessons/{id}', [LessonController::class, 'delete']);

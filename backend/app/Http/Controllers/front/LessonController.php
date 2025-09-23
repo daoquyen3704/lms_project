@@ -20,7 +20,23 @@ class LessonController extends Controller
         //     'data' => $lessons
         // ], 200);
     }
+    // This method will fetch lesson data
+    public function show($id)
+    {
+        $lesson = Lesson::find($id);
 
+        if ($lesson == null) {
+            return response()->json([
+                'status' => 404,
+                'message' => "Lesson not found",
+            ], 404);
+        }
+
+        return response()->json([
+            'status' => 200,
+            'data' => $lesson,
+        ], 200);
+    }
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -52,8 +68,10 @@ class LessonController extends Controller
     // This method will update a lesson
     public function update($id, Request $request)
     {
+        // Tìm lesson theo ID
         $lesson = Lesson::find($id);
 
+        // Nếu không tìm thấy lesson, trả về lỗi 404
         if ($lesson == null) {
             return response()->json([
                 'status' => 404,
@@ -61,8 +79,14 @@ class LessonController extends Controller
             ], 404);
         }
 
+        // Validate dữ liệu request
         $validator = Validator::make($request->all(), [
-            'lesson' => 'required|string',
+            'lesson' => 'required|string|min:5', // Kiểm tra title lesson có ít nhất 5 ký tự
+            'chapter_id' => 'required|exists:chapters,id', // Kiểm tra chapter_id có tồn tại trong bảng chapters
+            'status' => 'required|boolean', // Kiểm tra status là boolean (1 hoặc 0)
+            'free_preview' => 'nullable|boolean', // Kiểm tra free_preview là boolean, nếu không có thì bỏ qua
+            'duration' => 'nullable|integer', // Duration nếu có thì là số nguyên
+            'description' => 'nullable|string', // Description có thể bỏ qua nếu không có
         ]);
 
         if ($validator->fails()) {
@@ -72,20 +96,25 @@ class LessonController extends Controller
             ], 400);
         }
 
+        // Cập nhật thông tin lesson
         $lesson->chapter_id = $request->chapter_id;
         $lesson->title = $request->lesson;
-        $lesson->is_free_preview = ($request->free_preview == 'false') ? 'no' : 'yes';
+        $lesson->is_free_preview = ($request->free_preview === null) ? $lesson->is_free_preview : ($request->free_preview ? 'yes' : 'no'); // Kiểm tra free_preview
         $lesson->duration = $request->duration;
         $lesson->description = $request->description;
         $lesson->status = $request->status;
+
+        // Lưu lại
         $lesson->save();
 
+        // Trả về kết quả thành công
         return response()->json([
             'status' => 200,
             'data' => $lesson,
             'message' => "Lesson updated successfully",
         ], 200);
     }
+
 
     public function delete($id)
     {
