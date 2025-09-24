@@ -3,24 +3,34 @@ import { createContext, useState } from "react";
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-    // Khởi tạo user từ localStorage (nếu có)
+    // Lấy user và token từ localStorage (nếu có)
     const [user, setUser] = useState(() => {
         const data = localStorage.getItem("userInfoLms");
         return data ? JSON.parse(data) : null;
     });
 
-    const login = (userData) => {
+    const [token, setToken] = useState(() => {
+        return localStorage.getItem("accessToken") || null;
+    });
+
+    // Đăng nhập: lưu cả user và token
+    const login = (userData, accessToken) => {
         localStorage.setItem("userInfoLms", JSON.stringify(userData));
-        setUser(userData);  // ✅ cập nhật state ngay lập tức
+        localStorage.setItem("accessToken", accessToken);
+        setUser(userData);
+        setToken(accessToken);
     };
 
+    // Đăng xuất: xoá user và token
     const logout = () => {
         localStorage.removeItem("userInfoLms");
+        localStorage.removeItem("accessToken");
         setUser(null);
+        setToken(null);
     };
 
     return (
-        <AuthContext.Provider value={{ user, login, logout }}>
+        <AuthContext.Provider value={{ user, token, login, logout }}>
             {children}
         </AuthContext.Provider>
     );

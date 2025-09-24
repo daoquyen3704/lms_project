@@ -1,30 +1,35 @@
-import React, { use, useEffect } from 'react'
-import Layout from '../../../common/Layout'
-import { Link } from 'react-router-dom'
-import UserSidebar from '../../../common/UserSidebar'
-import { set, useForm } from 'react-hook-form'
-import { apiUrl, token } from '../../../common/Config'
-import { useNavigate } from 'react-router-dom'
-import toast from 'react-hot-toast'
-import { AuthContext } from '../../../context/Auth'
-import { useContext, useState } from 'react'
-import { useParams } from 'react-router-dom'
-import ManageOutcome from './ManageOutcome'
-import ManageRequirement from './ManageRequirement'
-import EditCover from './EditCover'
-import ManageChapter from './ManageChapter'
+import React, { useEffect, useState, useContext } from 'react';
+import { useForm } from 'react-hook-form';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { AuthContext } from '../../../context/Auth'; // Import AuthContext
+import { apiUrl } from '../../../common/Config';
+import toast from 'react-hot-toast';
+import UserSidebar from '../../../common/UserSidebar';
+import ManageOutcome from './ManageOutcome';
+import ManageRequirement from './ManageRequirement';
+import EditCover from './EditCover';
+import ManageChapter from './ManageChapter';
+import { fetchJWT } from '../../../../utils/fetchJWT';
+import Layout from '../../../common/Layout';
+
 const EditCourse = () => {
+    const { token } = useContext(AuthContext); // Get token from AuthContext
     const params = useParams();
-    const [course, setCourse] = useState([]);
+    const navigate = useNavigate();
+
+    const [course, setCourse] = useState({});
     const [loading, setLoading] = useState(false);
+    const [categories, setCategories] = useState([]);
+    const [languages, setLanguages] = useState([]);
+    const [levels, setLevels] = useState([]);
+
     const { register, handleSubmit, formState: { errors }, reset } = useForm({
         defaultValues: async () => {
-            const res = await fetch(`${apiUrl}/courses/${params.id}`, {
+            const res = await fetchJWT(`${apiUrl}/courses/${params.id}`, {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
                     "Accept": "application/json",
-                    "Authorization": `Bearer ${token}`
                 }
             });
             const result = await res.json();
@@ -37,67 +42,63 @@ const EditCourse = () => {
                     level: result.data.level_id,
                     sell_price: result.data.price,
                     cross_price: result.data.cross_price
-                })
+                });
                 setCourse(result.data);
-            }
-            else {
+            } else {
                 toast.error(result.message);
             }
         }
     });
-    const navigate = useNavigate();
-    const [categories, setCategories] = useState([]);
-    const [languages, setLanguages] = useState([]);
-    const [levels, setLevels] = useState([]);
+
+    useEffect(() => {
+        const courseMetaData = async () => {
+            const res = await fetchJWT(`${apiUrl}/courses/meta-data`, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json",
+                }
+            });
+            const result = await res.json();
+            if (res.ok && result.status === 200) {
+                setCategories(result.categories);
+                setLanguages(result.languages);
+                setLevels(result.levels);
+            } else {
+                toast.error(result.message);
+            }
+        };
+
+        courseMetaData();
+    }, []);
+
     const onSubmit = async (data) => {
         setLoading(true);
         try {
-            const res = await fetch(`${apiUrl}/courses/${params.id}`, {
+            const res = await fetchJWT(`${apiUrl}/courses/${params.id}`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
                     "Accept": "application/json",
-                    "Authorization": `Bearer ${token}`
                 },
                 body: JSON.stringify(data),
             });
 
             const result = await res.json();
-            // console.log(result);
             setLoading(false);
+
             if (res.ok && result.status === 200) {
                 toast.success("Course updated successfully!");
+                navigate(`/account/courses/edit/${params.id}`);
             } else {
                 toast.error(result.message);
             }
         } catch (error) {
-            console.error("Register error:", error);
+            setLoading(false);
             toast.error("Lỗi kết nối server!");
         }
-    }
+    };
 
-    const courseMetaData = async () => {
-        const res = await fetch(`${apiUrl}/courses/meta-data`, {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/json",
-                "Authorization": `Bearer ${token}`
-            }
-        });
-        const result = await res.json();
-        if (res.ok && result.status === 200) {
-            setCategories(result.categories);
-            setLanguages(result.languages);
-            setLevels(result.levels);
-        }
-        else {
-            toast.error(result.message);
-        }
-    }
-    useEffect(() => {
-        courseMetaData();
-    }, []);
     return (
         <Layout>
             <section className='section-4'>
@@ -127,18 +128,16 @@ const EditCourse = () => {
                                                 <h4 className='h5 border-bottom pb-3 mb-3'>Course Detail</h4>
                                                 <div className='mb-3'>
                                                     <label className='form-label' htmlFor="title">Title</label>
-                                                    <input type="text"
-                                                        {
-                                                        ...register("title", { required: "The title field is required" })
-                                                        }
+                                                    <input
+                                                        type="text"
+                                                        {...register("title", { required: "The title field is required" })}
                                                         className={`form-control ${errors.title ? "is-invalid" : ""}`}
                                                         id='title'
                                                     />
-                                                    {
-                                                        errors.title && <p className='invalid-feedback'>{errors.title.message}</p>
-                                                    }
+                                                    {errors.title && <p className='invalid-feedback'>{errors.title.message}</p>}
                                                 </div>
 
+                                                {/* Category */}
                                                 <div className='mb-3'>
                                                     <label className='form-label' htmlFor="category">Category</label>
                                                     <select
@@ -148,18 +147,14 @@ const EditCourse = () => {
                                                         name="category"
                                                     >
                                                         <option value="">Select a Category</option>
-                                                        {categories && categories.map((category) => (
-                                                            <option key={category.id} value={category.id}>
-                                                                {category.name}
-                                                            </option>
+                                                        {categories.map((category) => (
+                                                            <option key={category.id} value={category.id}>{category.name}</option>
                                                         ))}
                                                     </select>
-                                                    {errors.category && (
-                                                        <p className='invalid-feedback'>{errors.category.message}</p>
-                                                    )}
+                                                    {errors.category && <p className="invalid-feedback">{errors.category.message}</p>}
                                                 </div>
 
-
+                                                {/* Level */}
                                                 <div className='mb-3'>
                                                     <label className='form-label' htmlFor="level">Level</label>
                                                     <select
@@ -169,18 +164,14 @@ const EditCourse = () => {
                                                         {...register("level", { required: "The level field is required" })}
                                                     >
                                                         <option value="">Select a Level</option>
-                                                        {levels && levels.map((level) => (
-                                                            <option key={level.id} value={level.id}>
-                                                                {level.name}
-                                                            </option>
+                                                        {levels.map((level) => (
+                                                            <option key={level.id} value={level.id}>{level.name}</option>
                                                         ))}
                                                     </select>
-                                                    {errors.level && (
-                                                        <p className="invalid-feedback">{errors.level.message}</p>
-                                                    )}
+                                                    {errors.level && <p className="invalid-feedback">{errors.level.message}</p>}
                                                 </div>
 
-
+                                                {/* Language */}
                                                 <div className='mb-3'>
                                                     <label className='form-label' htmlFor="language">Language</label>
                                                     <select
@@ -190,24 +181,18 @@ const EditCourse = () => {
                                                         {...register("language", { required: "The language field is required" })}
                                                     >
                                                         <option value="">Select a Language</option>
-                                                        {languages && languages.map((language) => (
-                                                            <option key={language.id} value={language.id}>
-                                                                {language.name}
-                                                            </option>
+                                                        {languages.map((language) => (
+                                                            <option key={language.id} value={language.id}>{language.name}</option>
                                                         ))}
                                                     </select>
-                                                    {errors.language && (
-                                                        <p className="invalid-feedback">{errors.language.message}</p>
-                                                    )}
+                                                    {errors.language && <p className="invalid-feedback">{errors.language.message}</p>}
                                                 </div>
 
-
+                                                {/* Description */}
                                                 <div className='mb-3'>
                                                     <label className='form-label' htmlFor="description">Description</label>
                                                     <textarea
-                                                        {
-                                                        ...register("description")
-                                                        }
+                                                        {...register("description")}
                                                         className='form-control'
                                                         rows={5}
                                                         name="description"
@@ -226,11 +211,8 @@ const EditCourse = () => {
                                                         {...register("sell_price", { required: "The sell price field is required" })}
                                                         className={`form-control ${errors.sell_price ? "is-invalid" : ""}`}
                                                     />
-                                                    {errors.sell_price && (
-                                                        <p className="invalid-feedback">{errors.sell_price.message}</p>
-                                                    )}
+                                                    {errors.sell_price && <p className="invalid-feedback">{errors.sell_price.message}</p>}
                                                 </div>
-
 
                                                 <div className='mb-3'>
                                                     <label className='form-label' htmlFor="cross-price">Cross Price</label>
@@ -241,33 +223,24 @@ const EditCourse = () => {
                                                         {...register("cross_price")}
                                                         className={`form-control ${errors.cross_price ? "is-invalid" : ""}`}
                                                     />
-                                                    {errors.cross_price && (
-                                                        <p className="invalid-feedback">{errors.cross_price.message}</p>
-                                                    )}
+                                                    {errors.cross_price && <p className="invalid-feedback">{errors.cross_price.message}</p>}
                                                 </div>
-
 
                                                 <button
                                                     disabled={loading}
                                                     className='btn btn-primary'>
-                                                    {loading == false ? 'Update' : 'Please wait...'}</button>
+                                                    {loading ? 'Please wait...' : 'Update'}
+                                                </button>
                                             </div>
-
-
                                         </div>
                                     </form>
-                                    <ManageChapter
-                                        course={course}
-                                        params={params}
-                                    />
+                                    <ManageChapter course={course} params={params} />
                                 </div>
+
                                 <div className='col-md-5'>
                                     <ManageOutcome />
                                     <ManageRequirement />
-                                    <EditCover
-                                        course={course}
-                                        setCourse={setCourse}
-                                    />
+                                    <EditCover course={course} setCourse={setCourse} />
                                 </div>
                             </div>
                         </div>
@@ -275,7 +248,7 @@ const EditCourse = () => {
                 </div>
             </section>
         </Layout>
-    )
-}
+    );
+};
 
-export default EditCourse
+export default EditCourse;

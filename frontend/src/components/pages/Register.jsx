@@ -1,18 +1,15 @@
-import React from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import Layout from '../common/Layout'
-import { useForm } from 'react-hook-form'
-import { apiUrl } from '../common/Config'
-import toast from 'react-hot-toast'
+import React, { useContext } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import Layout from '../common/Layout';
+import { useForm } from 'react-hook-form';
+import toast from 'react-hot-toast';
+import { apiUrl } from '../common/Config';
+import { AuthContext } from '../context/Auth';
 
 const Register = () => {
+    const { login } = useContext(AuthContext);
     const navigate = useNavigate();
-    const {
-        handleSubmit,
-        register,
-        formState: { errors, isSubmitting },
-        setError
-    } = useForm();
+    const { handleSubmit, register, formState: { errors, isSubmitting }, setError } = useForm();
 
     const onSubmit = async (data) => {
         try {
@@ -26,11 +23,21 @@ const Register = () => {
             });
 
             const result = await res.json();
-            console.log(result);
-
             if (res.ok && result.status === 200) {
-                toast.success(result.message);
-                navigate('/account/login');
+                // Lưu thông tin người dùng và token vào localStorage
+                const userInfo = {
+                    name: result.user.name,
+                    id: result.user.id,
+                    token: result.access_token, // Lưu token vào localStorage
+                };
+                localStorage.setItem("accessToken", result.access_token); // Lưu token
+                localStorage.setItem("userInfoLms", JSON.stringify(userInfo)); // Lưu thông tin người dùng
+
+                // Cập nhật vào AuthContext
+                login(userInfo, result.access_token);
+
+                toast.success(result.message || "Registration successful!");
+                navigate('/account/dashboard'); // Redirect đến dashboard sau khi đăng ký
             } else {
                 // Lấy lỗi validate từ API (Laravel trả về trong "message")
                 const apiErrors = result.message;
@@ -47,7 +54,6 @@ const Register = () => {
             toast.error("Lỗi kết nối server!");
         }
     };
-
 
     return (
         <Layout>
@@ -112,7 +118,7 @@ const Register = () => {
                                 </div>
 
                                 <div className="d-flex justify-content-center py-3">
-                                    Already have account? &nbsp;
+                                    Already have an account? &nbsp;
                                     <Link className="text-secondary" to={`/account/login`}>
                                         Login
                                     </Link>

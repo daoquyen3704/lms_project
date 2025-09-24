@@ -1,21 +1,15 @@
-import React, { useContext } from 'react'
-import { Link } from 'react-router-dom'
-import Layout from '../common/Layout'
-import { useForm } from 'react-hook-form'
-import { useNavigate } from 'react-router-dom'
-import toast from 'react-hot-toast'
-import { apiUrl } from '../common/Config'
-import { AuthContext } from '../context/Auth'
+import React, { useContext } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import Layout from '../common/Layout';
+import { useForm } from 'react-hook-form';
+import toast from 'react-hot-toast';
+import { apiUrl } from '../common/Config';
+import { AuthContext } from '../context/Auth';
 
 const Login = () => {
     const { login } = useContext(AuthContext);
     const navigate = useNavigate();
-    const {
-        handleSubmit,
-        register,
-        formState: { errors, isSubmitting },
-        setError
-    } = useForm();
+    const { handleSubmit, register, formState: { errors, isSubmitting }, setError } = useForm();
 
     const onSubmit = async (data) => {
         try {
@@ -29,25 +23,31 @@ const Login = () => {
             });
 
             const result = await res.json();
-            // console.log(result);
 
             if (res.ok && result.status === 200) {
+                // Lưu token và user thông tin vào localStorage
                 const userInfo = {
-                    name: result.name,
-                    id: result.id,
-                    token: result.token,
-                }
-                localStorage.setItem("userInfoLms", JSON.stringify(userInfo));
-                login(userInfo);
+                    name: result.user.name,
+                    id: result.user.id,
+                    token: result.access_token, // Lưu token vào localStorage
+                };
+                localStorage.setItem("accessToken", result.access_token);  // Lưu token
+                localStorage.setItem("userInfoLms", JSON.stringify(userInfo)); // Lưu thông tin user
+
+                // Cập nhật vào AuthContext
+                login(userInfo, result.access_token);
+
+                // Redirect đến Dashboard
                 navigate('/account/dashboard');
             } else {
-                toast.error(result.message);
+                toast.error(result.message || "Login failed!");
             }
         } catch (error) {
-            console.error("Register error:", error);
+            console.error("Login error:", error);
             toast.error("Lỗi kết nối server!");
         }
     };
+
     return (
         <Layout>
             <div className='container py-5 mt-5'>
@@ -82,11 +82,10 @@ const Login = () => {
                                         placeholder="Password"
                                     />
                                     {errors.password && <p className="invalid-feedback">{errors.password.message}</p>}
-
                                 </div>
 
                                 <div className='d-flex justify-content-between align-items-center'>
-                                    <button className='btn btn-primary'>Login</button>
+                                    <button className='btn btn-primary' disabled={isSubmitting}>Login</button>
                                     <Link to={`/account/register`} className='text-secondary'>Register Here</Link>
                                 </div>
                             </div>
@@ -95,8 +94,7 @@ const Login = () => {
                 </div>
             </div>
         </Layout>
+    );
+};
 
-    )
-}
-
-export default Login
+export default Login;

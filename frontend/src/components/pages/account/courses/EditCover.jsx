@@ -1,24 +1,27 @@
-import React from 'react'
-import { useState } from 'react'
-import { FilePond, registerPlugin } from 'react-filepond'
-import 'filepond/dist/filepond.min.css'
-import FilePondPluginImageExifOrientation from 'filepond-plugin-image-exif-orientation'
-import FilePondPluginImagePreview from 'filepond-plugin-image-preview'
+import React, { useState, useContext } from 'react';
+import { FilePond, registerPlugin } from 'react-filepond';
+import 'filepond/dist/filepond.min.css';
+import FilePondPluginImageExifOrientation from 'filepond-plugin-image-exif-orientation';
+import FilePondPluginImagePreview from 'filepond-plugin-image-preview';
 import FilePondPluginFileValidateType from 'filepond-plugin-file-validate-type';
-import 'filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css'
-registerPlugin(FilePondPluginImageExifOrientation, FilePondPluginImagePreview, FilePondPluginFileValidateType)
-import { apiUrl, token } from '../../../common/Config'
-import { toast } from 'react-hot-toast'
+import 'filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css';
+import { AuthContext } from '../../../context/Auth'; // Import AuthContext
+import { toast } from 'react-hot-toast';
+import { apiUrl } from '../../../common/Config';
+import { fetchJWT } from '../../../../utils/fetchJWT';
 
+registerPlugin(FilePondPluginImageExifOrientation, FilePondPluginImagePreview, FilePondPluginFileValidateType);
 
 const EditCover = ({ course, setCourse }) => {
+    const { token } = useContext(AuthContext); // Get token from AuthContext
     const [files, setFiles] = useState([]);
+
     return (
         <div className='card shadow-lg border-0 mt-3'>
             <div className='card-body p-4'>
                 <h4 className='h5 mb-3'>Cover Image</h4>
 
-                <FilePond className='justify-content-between'
+                <FilePond
                     acceptedFileTypes={['image/jpeg', 'image/jpg', 'image/png']}
                     credits={false}
                     files={files}
@@ -35,27 +38,25 @@ const EditCover = ({ course, setCourse }) => {
                             onload: (response) => {
                                 response = JSON.parse(response);
                                 toast.success(response.message);
-                                const updateCourseData = { ...course, course_small_image: response.data.course_small_image };
-                                setCourse(updateCourseData)
-                                setFiles([
-                                ]);
+                                const updatedCourseData = { ...course, course_small_image: response.data.course_small_image };
+                                setCourse(updatedCourseData); // Update course data with new image
+                                setFiles([]);
                             },
                             onerror: (errors) => {
-                                console.log(errors)
+                                console.log(errors);
+                                toast.error("Failed to upload image.");
                             },
                         },
                     }}
                     name="image"
                     labelIdle='Drag & Drop your files or <span class="filepond--label-action">Browse</span>'
                 />
-                {
-                    course.course_small_image &&
-                    <img src={course.course_small_image} className='rounded w-100' />
-                }
+                {course.course_small_image && (
+                    <img src={course.course_small_image} className='rounded w-100' alt="Course Cover" />
+                )}
             </div>
-
         </div>
-    )
-}
+    );
+};
 
-export default EditCover
+export default EditCover;

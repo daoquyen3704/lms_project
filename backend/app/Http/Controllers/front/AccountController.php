@@ -55,21 +55,43 @@ class AccountController extends Controller
             ], 400);
         }
 
-        if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
-            $user = User::find(Auth::user()->id);
-            $token = $user->createToken('auth_token')->plainTextToken;
+        $credentials = $request->only('email', 'password');
 
+        if (!$token = Auth::attempt($credentials)) {
             return response()->json([
-                'status' => 200,
-                'token' => $token,
-                'name' => $user->name,
-                'id' => Auth::user()->id,
-            ], 200);
-        } else {
-            return response()->json([
-                'status' => 401,
-                'message' => 'Either email or password is incorrect.'
+                'status'  => 401,
+                'message' => 'Email hoặc mật khẩu không đúng'
             ], 401);
         }
+
+        return response()->json([
+            'status'       => 200,
+            'access_token' => $token,
+            'token_type'   => 'bearer',
+            'expires_in'   => Auth::factory()->getTTL() * 60, // TTL mặc định = 60 phút
+            'user'         => Auth::user()
+        ], 200);
+    }
+
+    public function me()
+    {
+        return response()->json(Auth::user());
+    }
+
+    // Đăng xuất
+    public function logout()
+    {
+        Auth::logout();
+        return response()->json(['message' => 'Successfully logged out']);
+    }
+
+    // Refresh token
+    public function refresh()
+    {
+        return response()->json([
+            'access_token' => Auth::refresh(),
+            'token_type'   => 'bearer',
+            'expires_in'   => Auth::factory()->getTTL() * 60
+        ]);
     }
 }

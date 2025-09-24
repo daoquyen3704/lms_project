@@ -1,33 +1,43 @@
-import React, { useEffect } from 'react'
-import { useState } from 'react'
-import { FilePond, registerPlugin } from 'react-filepond'
-import 'filepond/dist/filepond.min.css'
-import FilePondPluginImageExifOrientation from 'filepond-plugin-image-exif-orientation'
-import FilePondPluginImagePreview from 'filepond-plugin-image-preview'
+import React, { useEffect, useState, useContext } from 'react';
+import { FilePond, registerPlugin } from 'react-filepond';
+import 'filepond/dist/filepond.min.css';
+import FilePondPluginImageExifOrientation from 'filepond-plugin-image-exif-orientation';
+import FilePondPluginImagePreview from 'filepond-plugin-image-preview';
 import FilePondPluginFileValidateType from 'filepond-plugin-file-validate-type';
-import 'filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css'
-registerPlugin(FilePondPluginImageExifOrientation, FilePondPluginImagePreview, FilePondPluginFileValidateType)
-import { apiUrl, token } from '../../../common/Config'
-import { toast } from 'react-hot-toast'
-import ReactPlayer from 'react-player'
+import 'filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css';
+import { AuthContext } from '../../../context/Auth'; // Import AuthContext
+import { toast } from 'react-hot-toast';
+import ReactPlayer from 'react-player';
+import { fetchJWT } from '../../../../utils/fetchJWT';
+import { apiUrl } from '../../../common/Config';
+
+registerPlugin(FilePondPluginImageExifOrientation, FilePondPluginImagePreview, FilePondPluginFileValidateType);
+
 const LessonVideo = ({ lesson }) => {
+    const { token } = useContext(AuthContext); // Get token from AuthContext
     const [files, setFiles] = useState([]);
     const [videoUrl, setVideoUrl] = useState();
+
     useEffect(() => {
-        if (lesson) {
+        if (lesson && lesson.video_url) {
             setVideoUrl(lesson.video_url);
         }
-    }, [lesson])
+    }, [lesson]);
+
+    const handleFileUpload = (file) => {
+        setFiles([file]);
+    };
+
     return (
         <div className='card shadow-lg border-0'>
             <div className='card-body p-4'>
                 <h4 className='h5 mb-3'>Lesson Video</h4>
 
-                <FilePond className='justify-content-between'
+                <FilePond
                     acceptedFileTypes={['video/mp4']}
                     credits={false}
                     files={files}
-                    onupdatefiles={setFiles}
+                    onupdatefiles={handleFileUpload}
                     allowMultiple={false}
                     maxFiles={1}
                     server={{
@@ -38,13 +48,14 @@ const LessonVideo = ({ lesson }) => {
                                 'Authorization': `Bearer ${token}`
                             },
                             onload: (response) => {
-                                response = JSON.parse(response);
-                                toast.success(response.message);
-                                setFiles([]);
-                                setVideoUrl(response.data.video_url);
+                                const result = JSON.parse(response);
+                                toast.success(result.message);
+                                setFiles([]); // Reset the file input after success
+                                setVideoUrl(result.data.video_url); // Update video URL
                             },
                             onerror: (errors) => {
-                                console.log(errors)
+                                console.error(errors);
+                                toast.error("Video upload failed");
                             },
                         },
                     }}
@@ -52,18 +63,19 @@ const LessonVideo = ({ lesson }) => {
                     labelIdle='Drag & Drop your files or <span class="filepond--label-action">Browse</span>'
                 />
 
-                {
-                    videoUrl &&
-                    <ReactPlayer src={videoUrl} controls={true}
-                        width={"100%"} height={"100%"}
-                    />
-
-                }
+                {videoUrl && (
+                    <div className="video-container">
+                        <ReactPlayer
+                            src={videoUrl}
+                            controls
+                            width="100%"
+                            height="100%"
+                        />
+                    </div>
+                )}
             </div>
-
         </div>
-    )
+    );
+};
 
-}
-
-export default LessonVideo
+export default LessonVideo;

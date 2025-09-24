@@ -1,83 +1,82 @@
-import React, { useEffect, useState, useRef } from 'react'
-import Layout from '../../../common/Layout'
-import UserSidebar from '../../../common/UserSidebar'
-import { useForm } from 'react-hook-form'
-import { apiUrl, token } from '../../../common/Config'
-import { Link, useParams } from 'react-router-dom'
-import JoditEditor from 'jodit-react'
-import toast from 'react-hot-toast'
-import LessonVideo from './LessonVideo'
-
+import React, { useEffect, useState, useContext, useRef } from 'react';
+import { useForm } from 'react-hook-form';
+import { useParams, Link } from 'react-router-dom';
+import { AuthContext } from '../../../context/Auth'; // Import AuthContext
+import toast from 'react-hot-toast';
+import JoditEditor from 'jodit-react';
+import LessonVideo from './LessonVideo';
+import { fetchJWT } from '../../../../utils/fetchJWT'; // Import fetchJWT
+import { apiUrl } from '../../../common/Config';
+import UserSidebar from '../../../common/UserSidebar';
+import Layout from '../../../common/Layout';
 const EditLesson = () => {
+    const { token } = useContext(AuthContext); // Get token from AuthContext
     const { register, handleSubmit, formState: { errors }, reset } = useForm({});
     const params = useParams();
     const [chapters, setChapters] = useState([]);
-    const [lesson, setLesson] = useState([]);
+    const [lesson, setLesson] = useState({});
     const [loading, setLoading] = useState(false);
     const editor = useRef(null);
     const [content, setContent] = useState('');
 
-
-    const onSubmit = (data) => {
+    // Handle form submission
+    const onSubmit = async (data) => {
         setLoading(true);
-        fetch(`${apiUrl}/lessons/${params.id}`, {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/json",
-                "Authorization": `Bearer ${token}`
-            },
-            body: JSON.stringify({
-                lesson: data.lesson,
-                chapter_id: data.chapter,
-                duration: data.duration,
-                description: content, // nội dung từ JoditEditor
-                status: data.status,
-                free_preview: data.free_preview // gửi dưới dạng true/false
-            })
-        })
-            .then(res => res.json())
-            .then(result => {
-                setLoading(false);
-                if (result.status === 200) {
-                    // Handle UI update
-                    toast.success("Lesson updated successfully!");
-                } else {
-                    console.log('Something went wrong:', result.message);
-                }
-            })
-            .catch(error => {
-                setLoading(false);
-                console.error('Error:', error);
+        try {
+            const res = await fetchJWT(`${apiUrl}/lessons/${params.id}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json",
+                },
+                body: JSON.stringify({
+                    lesson: data.lesson,
+                    chapter_id: data.chapter,
+                    duration: data.duration,
+                    description: content, // nội dung từ JoditEditor
+                    status: data.status,
+                    free_preview: data.free_preview,
+                }),
             });
-    }
 
+            const result = await res.json();
+            setLoading(false);
+
+            if (res.ok && result.status === 200) {
+                toast.success("Lesson updated successfully!");
+            } else {
+                console.log('Something went wrong:', result.message);
+            }
+        } catch (error) {
+            setLoading(false);
+            console.error('Error:', error);
+            toast.error("Server connection error!");
+        }
+    };
 
     useEffect(() => {
-        fetch(`${apiUrl}/chapters?course_id=${params.courseId}`, {
+        fetchJWT(`${apiUrl}/chapters?course_id=${params.courseId}`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
                 "Accept": "application/json",
-                "Authorization": `Bearer ${token}`
-            }
+            },
         })
             .then(res => res.json())
             .then(result => {
                 if (result.status === 200) {
                     setChapters(result.data);
                 } else {
-                    console.log('Something went wrong');
+                    console.log('Error fetching chapters');
                 }
             });
 
-        fetch(`${apiUrl}/lessons/${params.id}`, {
+        fetchJWT(`${apiUrl}/lessons/${params.id}`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
                 "Accept": "application/json",
-                "Authorization": `Bearer ${token}`
-            }
+            },
         })
             .then(res => res.json())
             .then(result => {
@@ -88,11 +87,11 @@ const EditLesson = () => {
                         chapter: result.data.chapter_id,
                         duration: result.data.duration,
                         status: result.data.status,
-                        free_preview: result.data.is_free_preview === 'yes'
+                        free_preview: result.data.is_free_preview === 'yes',
                     });
                     setContent(result.data.description || ''); // Update content for JoditEditor
                 } else {
-                    console.log('Something went wrong');
+                    console.log('Error fetching lesson');
                 }
             });
     }, [params.id, params.courseId]);
@@ -108,7 +107,7 @@ const EditLesson = () => {
             },
             height: 580,
         }
-    }
+    };
 
     return (
         <Layout>
@@ -118,7 +117,7 @@ const EditLesson = () => {
                         <div className='col-md-12 mt-5 mb-3'>
                             <div className='d-flex justify-content-between'>
                                 <h2 className='h4 mb-0 pb-0'>Edit Lesson</h2>
-                                <Link className='btn btn-primary' to={`/account/courses/edit/${params.courseId}`} >Back</Link>
+                                <Link className='btn btn-primary' to={`/account/courses/edit/${params.courseId}`}>Back</Link>
                             </div>
                         </div>
                         <div className='col-lg-3 account-sidebar'>
@@ -221,22 +220,18 @@ const EditLesson = () => {
                                             </div>
                                         </div>
                                     </form>
-
                                 </div>
+
                                 <div className='col-md-4'>
-                                    <LessonVideo
-                                        lesson={lesson}
-                                    />
+                                    <LessonVideo lesson={lesson} />
                                 </div>
                             </div>
                         </div>
-
-
                     </div>
                 </div>
             </section>
         </Layout>
-    )
-}
+    );
+};
 
-export default EditLesson
+export default EditLesson;

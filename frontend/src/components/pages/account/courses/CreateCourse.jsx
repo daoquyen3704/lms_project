@@ -1,31 +1,30 @@
-import React from 'react'
-import Layout from '../../../common/Layout'
-import { Link } from 'react-router-dom'
-import UserSidebar from '../../../common/UserSidebar'
-import { useForm } from 'react-hook-form'
-import { apiUrl, token } from '../../../common/Config'
-import { useNavigate } from 'react-router-dom'
-import toast from 'react-hot-toast'
-import { AuthContext } from '../../../context/Auth'
+import React, { useContext } from 'react';
+import Layout from '../../../common/Layout';
+import { Link, useNavigate } from 'react-router-dom';
+import UserSidebar from '../../../common/UserSidebar';
+import { useForm } from 'react-hook-form';
+import { AuthContext } from '../../../context/Auth';  // Import AuthContext
+import toast from 'react-hot-toast';
+import { fetchJWT } from '../../../../utils/fetchJWT';
+import { apiUrl } from '../../../common/Config';
 
 const CreateCourse = () => {
+    const { token } = useContext(AuthContext);  // Get token from AuthContext
     const { register, handleSubmit, formState: { errors } } = useForm();
     const navigate = useNavigate();
+
     const onSubmit = async (data) => {
         try {
-            const res = await fetch(`${apiUrl}/courses`, {
+            const res = await fetchJWT(`${apiUrl}/courses`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                     "Accept": "application/json",
-                    "Authorization": `Bearer ${token}`
                 },
                 body: JSON.stringify(data),
             });
 
             const result = await res.json();
-            // console.log(result);
-
             if (res.ok && result.status === 200) {
                 toast.success("Create course successfully!");
                 navigate('/account/courses/edit/' + result.data.id);
@@ -33,10 +32,11 @@ const CreateCourse = () => {
                 toast.error(result.message);
             }
         } catch (error) {
-            console.error("Register error:", error);
+            console.error("Create course error:", error);
             toast.error("Lỗi kết nối server!");
         }
-    }
+    };
+
     return (
         <Layout>
             <section className='section-4'>
@@ -64,15 +64,11 @@ const CreateCourse = () => {
                                             <div className='mb-3'>
                                                 <label htmlFor="title">Title</label>
                                                 <input type="text"
-                                                    {
-                                                    ...register("title", { required: "The title field is required" })
-                                                    }
+                                                    {...register("title", { required: "The title field is required" })}
                                                     className={`form-control ${errors.title ? "is-invalid" : ""}`}
                                                     id='title' placeholder='Enter course title'
                                                 />
-                                                {
-                                                    errors.title && <p className='invalid-feedback'>{errors.title.message}</p>
-                                                }
+                                                {errors.title && <p className='invalid-feedback'>{errors.title.message}</p>}
                                             </div>
                                             <button className='btn btn-primary'>Continue</button>
                                         </div>
@@ -84,7 +80,7 @@ const CreateCourse = () => {
                 </div>
             </section>
         </Layout>
-    )
-}
+    );
+};
 
-export default CreateCourse
+export default CreateCourse;

@@ -1,22 +1,24 @@
-import React, { useEffect } from 'react'
-import { Modal, Button } from 'react-bootstrap';
+import React, { useEffect, useContext } from 'react';
+import { Modal } from 'react-bootstrap';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { apiUrl, token } from '../../../common/Config';
+import { AuthContext } from '../../../context/Auth'; // Import AuthContext
 import toast from 'react-hot-toast';
+import { fetchJWT } from '../../../../utils/fetchJWT';
+
 const UpdateChapter = ({ showChapter, handleClose, chapterData, setChapters }) => {
+    const { token } = useContext(AuthContext); // Get token from AuthContext
     const { register, handleSubmit, formState: { errors }, reset } = useForm();
     const [loading, setLoading] = useState(false);
 
     const onSubmit = async (data) => {
         setLoading(true);
         try {
-            const res = await fetch(`${apiUrl}/chapters/${chapterData.id}`, {
+            const res = await fetchJWT(`${apiUrl}/chapters/${chapterData.id}`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
                     "Accept": "application/json",
-                    "Authorization": `Bearer ${token}`
                 },
                 body: JSON.stringify(data),
             });
@@ -26,23 +28,22 @@ const UpdateChapter = ({ showChapter, handleClose, chapterData, setChapters }) =
 
             if (res.ok && result.status === 200) {
                 toast.success("Chapter updated successfully!");
-                // 👉 Gửi đúng action và payload là chapter mới
                 setChapters({ type: "UPDATE_CHAPTER", payload: result.data });
                 handleClose();
             } else {
-                toast.error(result.message);
+                toast.error(result.message || "Update failed!");
             }
-        }
-        catch (error) {
+        } catch (error) {
+            setLoading(false);
             console.error("Update error:", error);
-            toast.error("Lỗi kết nối server!");
+            toast.error("Server connection error!");
         }
     };
 
     useEffect(() => {
         if (chapterData) {
             reset({
-                chapter: chapterData.title // field bạn lưu là title
+                chapter: chapterData.title, // Field you store is 'title'
             });
         }
     }, [chapterData, reset, showChapter]);
@@ -80,6 +81,4 @@ const UpdateChapter = ({ showChapter, handleClose, chapterData, setChapters }) =
     );
 };
 
-
-
-export default UpdateChapter
+export default UpdateChapter;
