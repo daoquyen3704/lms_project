@@ -38,7 +38,6 @@ const EditCover = ({ course, setCourse }) => {
                                 const updateCourseData = { ...course, course_small_image: response.data.course_small_image };
                                 setCourse(updateCourseData)
                                 setFiles([
-
                                 ]);
                             },
                             onerror: (errors) => {

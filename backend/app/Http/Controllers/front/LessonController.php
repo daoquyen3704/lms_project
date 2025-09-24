@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Lesson;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\File;
+
 
 class LessonController extends Controller
 {
@@ -130,6 +132,48 @@ class LessonController extends Controller
         return response()->json([
             'status' => 200,
             'message' => "Lesson deleted successfully",
+        ], 200);
+    }
+
+    public function saveVideo($id, Request $request)
+    {
+        $lesson = Lesson::find($id);
+        if ($lesson == null) {
+            return response()->json([
+                'status' => 404,
+                'message' => "Lesson not found",
+            ], 404);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'video' => 'required|mimes:mp4',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 400,
+                'errors' => $validator->errors()
+            ], 400);
+        }
+
+        if (!empty($lesson->video)) {
+            if (File::exists(public_path('uploads/courses/videos/' . $lesson->video))) {
+                File::delete(public_path('uploads/courses/videos/' . $lesson->video));
+            }
+        }
+        $video = $request->video;
+        $ext = $video->getClientOriginalExtension();
+        $videoName = strtotime('now') . '-' . $id . '.' . $ext; // 123233232-1.jpg
+        $video->move(public_path('uploads/courses/videos'), $videoName);
+
+
+
+        $lesson->video = $videoName;
+        $lesson->save();
+        return response()->json([
+            'status' => 200,
+            'data' => $lesson,
+            'message' => "Video uploaded successfully",
         ], 200);
     }
 }
