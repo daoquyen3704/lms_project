@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\front;
 
 use App\Http\Controllers\Controller;
+use App\Models\Chapter;
 use App\Models\Lesson;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -129,8 +130,11 @@ class LessonController extends Controller
             ], 404);
         }
         $lesson->delete();
+        $chapter_id = $lesson->chapter_id;
+        $chapter = Chapter::where('id', $chapter_id)->with('lessons')->first();
         return response()->json([
             'status' => 200,
+            'chapter' => $chapter,
             'message' => "Lesson deleted successfully",
         ], 200);
     }
@@ -174,6 +178,25 @@ class LessonController extends Controller
             'status' => 200,
             'data' => $lesson,
             'message' => "Video uploaded successfully",
+        ], 200);
+    }
+
+    public function sortLessons(Request $request)
+    {
+        $chapter_id = '';
+        if (!empty($request->lessons)) {
+            foreach ($request->lessons as $key => $value) {
+                $chapter_id = $value['chapter_id'];
+                Lesson::where('id', $value['id'])->update(['sort_order' => $key]);
+                // $outcome->save();
+            }
+        }
+        $chapter = Chapter::where('id', $chapter_id)->with('lessons')->first();
+
+        return response()->json([
+            'status' => 200,
+            'chapter' => $chapter,
+            'message' => "Lesson saved successfully",
         ], 200);
     }
 }
