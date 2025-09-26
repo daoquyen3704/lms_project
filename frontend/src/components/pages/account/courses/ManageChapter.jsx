@@ -13,6 +13,7 @@ import CreateLesson from './CreateLesson';
 import { fetchJWT } from '../../../../utils/fetchJWT';
 import { apiUrl } from '../../../common/Config';
 import LessonSort from './LessonSort';
+import SortChapter from './SortChapter';
 
 const ManageChapter = ({ course }) => {
     const { token } = useContext(AuthContext);
@@ -131,6 +132,12 @@ const ManageChapter = ({ course }) => {
         setLessonData(lessons);
     }
 
+    // sort Chapter
+    const [showChapterSort, setShowChapterSort] = useState(false);
+    const handleCloseChapterSort = () => setShowChapterSort(false);
+    const handleShowChapterSort = (lessons) => {
+        setShowChapterSort(true);
+    }
     return (
         <div className='card shadow-lg border-0 mt-3'>
             <div className='card-body p-4'>
@@ -154,6 +161,12 @@ const ManageChapter = ({ course }) => {
                     <button className='btn btn-primary'>Save</button>
                 </form>
 
+                <div className="d-flex justify-content-between  mb-2 mt-4">
+                    <h4 className="h5">Chapters</h4>
+                    <Link className="h6" onClick={() => handleShowChapterSort()} >
+                        <strong>Reorder Chapters</strong>
+                    </Link>
+                </div>
                 <Accordion>
                     {chapters.map((chapter, index) => (
                         <Accordion.Item key={chapter.id} eventKey={index}>
@@ -215,6 +228,13 @@ const ManageChapter = ({ course }) => {
                     handleCloseLessonSort={handleCloseLessonSort}
                     lessonData={lessonData}
                     setChapters={setChapters}
+                />
+
+                <SortChapter
+                    showChapterSort={showChapterSort}
+                    handleCloseChapterSort={handleCloseChapterSort}
+                    setChapters={setChapters}
+                    chapters={chapters}
                 />
             </div>
         </div>

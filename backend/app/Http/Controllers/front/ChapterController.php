@@ -102,15 +102,22 @@ class ChapterController extends Controller
         ], 200);
     }
 
-    public function sortChapter(Request $request)
+    public function sortChapters(Request $request)
     {
+        $courseId = '';
         if (!empty($request->chapters)) {
             foreach ($request->chapters as $key => $value) {
+                $courseId = $value['course_id'];
                 Chapter::where('id', $value['id'])->update(['sort_order' => $key]);
             }
         }
+        $chapters = Chapter::where('course_id', $courseId)
+            ->with('lessons')
+            ->orderBy('sort_order')
+            ->get();
         return response()->json([
             'status' => 200,
+            'data' => $chapters,
             'message' => "Chapter saved successfully",
         ], 200);
     }

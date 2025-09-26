@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useState, useContext } from 'react';
 import { FilePond, registerPlugin } from 'react-filepond';
 import 'filepond/dist/filepond.min.css';
 import FilePondPluginImageExifOrientation from 'filepond-plugin-image-exif-orientation';
@@ -7,26 +7,22 @@ import FilePondPluginFileValidateType from 'filepond-plugin-file-validate-type';
 import 'filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css';
 import { AuthContext } from '../../../context/Auth'; // Import AuthContext
 import { toast } from 'react-hot-toast';
-import ReactPlayer from 'react-player';
-import { fetchJWT } from '../../../../utils/fetchJWT';
 import { apiUrl } from '../../../common/Config';
-
+import { fetchJWT } from '../../../../utils/fetchJWT'
+import ReactPlayer from 'react-player';
+import { useEffect } from 'react';
 registerPlugin(FilePondPluginImageExifOrientation, FilePondPluginImagePreview, FilePondPluginFileValidateType);
 
 const LessonVideo = ({ lesson }) => {
-    const { token } = useContext(AuthContext); // Get token from AuthContext
     const [files, setFiles] = useState([]);
     const [videoUrl, setVideoUrl] = useState();
+    const { token } = useContext(AuthContext);
 
     useEffect(() => {
-        if (lesson && lesson.video_url) {
+        if (lesson) {
             setVideoUrl(lesson.video_url);
         }
     }, [lesson]);
-
-    const handleFileUpload = (file) => {
-        setFiles([file]);
-    };
 
     return (
         <div className='card shadow-lg border-0'>
@@ -34,10 +30,11 @@ const LessonVideo = ({ lesson }) => {
                 <h4 className='h5 mb-3'>Lesson Video</h4>
 
                 <FilePond
+                    className='justify-content-between'
                     acceptedFileTypes={['video/mp4']}
                     credits={false}
                     files={files}
-                    onupdatefiles={handleFileUpload}
+                    onupdatefiles={setFiles}
                     allowMultiple={false}
                     maxFiles={1}
                     server={{
@@ -48,14 +45,14 @@ const LessonVideo = ({ lesson }) => {
                                 'Authorization': `Bearer ${token}`
                             },
                             onload: (response) => {
-                                const result = JSON.parse(response);
-                                toast.success(result.message);
-                                setFiles([]); // Reset the file input after success
-                                setVideoUrl(result.data.video_url); // Update video URL
+                                response = JSON.parse(response);
+                                toast.success(response.message);
+                                setFiles([]);
+                                setVideoUrl(response.data.video_url);
                             },
                             onerror: (errors) => {
-                                console.error(errors);
-                                toast.error("Video upload failed");
+                                console.log(errors);
+                                toast.error("Failed to upload image.");
                             },
                         },
                     }}
@@ -64,18 +61,16 @@ const LessonVideo = ({ lesson }) => {
                 />
 
                 {videoUrl && (
-                    <div className="video-container">
-                        <ReactPlayer
-                            src={videoUrl}
-                            controls
-                            width="100%"
-                            height="100%"
-                        />
-                    </div>
+                    <ReactPlayer
+                        src={videoUrl}
+                        controls={true}
+                        width={"100%"}
+                        height={"100%"}
+                    />
                 )}
             </div>
         </div>
-    );
-};
+    )
+}
 
-export default LessonVideo;
+export default LessonVideo

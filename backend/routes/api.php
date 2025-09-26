@@ -1,6 +1,5 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\front\AccountController;
 use App\Http\Controllers\front\ChapterController;
@@ -9,16 +8,16 @@ use App\Http\Controllers\front\OutcomeController;
 use App\Http\Controllers\front\RequirementController;
 use App\Http\Controllers\front\LessonController;
 
-// Public routes
+// 🔓 Public routes
 Route::post('/register', [AccountController::class, 'register']);
 Route::post('/login', [AccountController::class, 'authenticate']);
+Route::post('/refresh', [AccountController::class, 'refresh']); // refresh để ngoài, không đi qua auth:api
 
-// Protected routes with JWT
-Route::group(['middleware' => ['auth:api']], function () {
+// 🔐 Protected routes (JWT required)
+Route::middleware('auth:api')->group(function () {
     // Account
     Route::get('/user', [AccountController::class, 'me']);
     Route::post('/logout', [AccountController::class, 'logout']);
-    Route::post('/refresh', [AccountController::class, 'refresh']);
 
     // Courses
     Route::post('/courses', [CourseController::class, 'store']);
@@ -46,7 +45,7 @@ Route::group(['middleware' => ['auth:api']], function () {
     Route::post('/chapters', [ChapterController::class, 'store']);
     Route::put('/chapters/{id}', [ChapterController::class, 'update']);
     Route::delete('/chapters/{id}', [ChapterController::class, 'delete']);
-    Route::post('/sort-chapters', [ChapterController::class, 'sortChapter']);
+    Route::post('/sort-chapters', [ChapterController::class, 'sortChapters']);
 
     // Lessons
     Route::get('/lessons/{id}', [LessonController::class, 'show']);

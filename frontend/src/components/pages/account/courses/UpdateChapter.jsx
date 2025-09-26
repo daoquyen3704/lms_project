@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 import { AuthContext } from '../../../context/Auth'; // Import AuthContext
 import toast from 'react-hot-toast';
 import { fetchJWT } from '../../../../utils/fetchJWT';
+import { apiUrl } from '../../../common/Config';
 
 const UpdateChapter = ({ showChapter, handleClose, chapterData, setChapters }) => {
     const { token } = useContext(AuthContext); // Get token from AuthContext

@@ -5,6 +5,7 @@ export async function fetchJWT(endpoint, options = {}) {
 
     const headers = {
         "Accept": "application/json",
+        "Content-Type": "application/json",
         ...options.headers,
         ...(token && { "Authorization": `Bearer ${token}` }),
     };
