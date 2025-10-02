@@ -28,10 +28,11 @@ const Register = () => {
                 const userInfo = {
                     name: result.user.name,
                     id: result.user.id,
-                    token: result.access_token, // Lưu token vào localStorage
+                    token: result.access_token,
                 };
-                localStorage.setItem("accessToken", result.access_token); // Lưu token
-                localStorage.setItem("userInfoLms", JSON.stringify(userInfo)); // Lưu thông tin người dùng
+                localStorage.setItem("accessToken", result.access_token);
+                localStorage.setItem("refreshToken", result.refresh_token); // Lưu refresh token
+                localStorage.setItem("userInfoLms", JSON.stringify(userInfo));
 
                 // Cập nhật vào AuthContext
                 login(userInfo, result.access_token);

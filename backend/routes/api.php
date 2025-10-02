@@ -4,19 +4,22 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\front\AccountController;
 use App\Http\Controllers\front\ChapterController;
 use App\Http\Controllers\front\CourseController;
+use App\Http\Controllers\front\HomeController;
 use App\Http\Controllers\front\OutcomeController;
 use App\Http\Controllers\front\RequirementController;
 use App\Http\Controllers\front\LessonController;
 
-// 🔓 Public routes
+// 🔓 Public routes (authentication)
 Route::post('/register', [AccountController::class, 'register']);
 Route::post('/login', [AccountController::class, 'authenticate']);
-Route::post('/refresh', [AccountController::class, 'refresh']); // refresh để ngoài, không đi qua auth:api
+Route::post('/refresh', [AccountController::class, 'refresh']);
+Route::get('/fetch-categories', [HomeController::class, 'fetchCategories']);
+Route::get('/fetch-featured-courses', [HomeController::class, 'fetchFeaturedCourses']);
 
 // 🔐 Protected routes (JWT required)
 Route::middleware('auth:api')->group(function () {
-    // Account
-    Route::get('/user', [AccountController::class, 'me']);
+    // Account & Profile
+    Route::get('/me', [AccountController::class, 'me']);
     Route::post('/logout', [AccountController::class, 'logout']);
 
     // Courses
@@ -25,6 +28,9 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/courses/{id}', [CourseController::class, 'show']);
     Route::put('/courses/{id}', [CourseController::class, 'update']);
     Route::post('/save-course-image/{id}', [CourseController::class, 'saveCourseImage']);
+    Route::post('/change-course-status/{id}', [CourseController::class, 'changeStatus']);
+    Route::delete('/courses/{id}', [CourseController::class, 'delete']);
+    Route::get('/my-courses', [AccountController::class, 'courses']); // User's courses
 
     // Outcomes
     Route::get('/outcomes', [OutcomeController::class, 'index']);

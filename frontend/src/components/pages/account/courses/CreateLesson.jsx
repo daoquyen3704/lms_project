@@ -6,7 +6,7 @@ import toast from 'react-hot-toast';
 import { fetchJWT } from '../../../../utils/fetchJWT';
 import { apiUrl } from '../../../common/Config';
 
-const CreateLesson = ({ course, showLessonModal, handleCloseLessonModal, addLessonToChapter, currentChapter }) => {
+const CreateLesson = ({ course, showLessonModal, handleCloseLessonModal, addLessonToChapter, currentChapter, chapters }) => {
     const { register, handleSubmit, formState: { errors }, reset, setValue } = useForm();
     const { token } = useContext(AuthContext);
     const [loading, setLoading] = useState(false);
@@ -64,7 +64,7 @@ const CreateLesson = ({ course, showLessonModal, handleCloseLessonModal, addLess
                             className={`form-select ${errors.chapter ? 'is-invalid' : ''}`}
                         >
                             <option value="">Select a chapter</option>
-                            {course.chapters && course.chapters.map(chapter => (
+                            {chapters && chapters.map(chapter => (
                                 <option key={chapter.id} value={chapter.id}>{chapter.title}</option>
                             ))}
                         </select>

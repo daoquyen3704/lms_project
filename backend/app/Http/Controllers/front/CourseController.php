@@ -4,15 +4,20 @@ namespace App\Http\Controllers\front;
 
 use App\Http\Controllers\Controller;
 use App\Models\Category;
+use App\Models\Chapter;
 use App\Models\Course;
 use App\Models\Language;
+use App\Models\Lesson;
 use App\Models\Level;
+use Illuminate\Container\Attributes\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Exists;
+use Intervention\Image\Colors\Rgb\Channels\Red;
 use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver;
+use PHPUnit\Framework\Constraint\Count;
 
 class CourseController extends Controller
 {
@@ -170,6 +175,71 @@ class CourseController extends Controller
             'status' => 200,
             'data' => $course,
             'message' => "Course image uploaded successfully",
+        ], 200);
+    }
+
+    public function changeStatus($id, Request $request)
+    {
+        $course = Course::find($id);
+        if ($course == null) {
+            return response()->json([
+                'status' => 404,
+                'message' => "Course not found",
+            ], 404);
+        }
+        $course->status = $request->status;
+        $course->save();
+        $message = ($course->status == 1) ? "Course published successfully" :  "Course unpublished successfully";;
+        return response()->json([
+            'status' => 200,
+            'data' => $course,
+            'message' => $message,
+        ], 200);
+    }
+
+    public function delete($id, Request $request)
+    {
+        $course = Course::where('id', $id)
+            ->where('user_id', $request->user()->id)
+            ->first();
+
+        if ($course == null) {
+            return response()->json([
+                'status' => 404,
+                'message' => "Course not found",
+            ], 404);
+        }
+        // $course->delete();
+        $chapters = Chapter::where('course_id', $course->id)->get();
+
+        if (!empty($chapters)) {
+            foreach ($chapters as $chapter) {
+                $lessons = Lesson::where('chapter_id', $chapter->id)->get();
+                if (!empty($lessons)) {
+                    foreach ($lessons as $lesson) {
+                        // delete lesson video file
+                        if (!empty($lesson->video)) {
+                            if (File::exists(public_path('uploads/courses/videos/' . $lesson->video))) {
+                                File::delete(public_path('uploads/courses/videos/' . $lesson->video));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if (!empty($course->image)) {
+            if (File::exists(public_path('images/courses/' . $course->image))) {
+                File::delete(public_path('images/courses/' . $course->image));
+            }
+            if (File::exists(public_path('uploads/course/small/' . $course->image))) {
+                File::delete(public_path('uploads/course/small/' . $course->image));
+            }
+        }
+
+        $course->delete();
+        return response()->json([
+            'status' => 200,
+            'message' => "Course deleted successfully",
         ], 200);
     }
 }

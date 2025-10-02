@@ -99,6 +99,24 @@ const EditCourse = () => {
         }
     };
 
+    const changeStatus = async (course) => {
+        const status = (course.status === 1) ? 0 : 1;
+        const res = await fetchJWT(`${apiUrl}/change-course-status/${params.id}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+            },
+            body: JSON.stringify({ status: status }),
+        });
+        const result = await res.json();
+        if (res.ok && result.status === 200) {
+            toast.success(result.message);
+            setCourse({ ...course, status: result.data.status });
+        } else {
+            toast.error(result.message);
+        }
+    }
     return (
         <Layout>
             <section className='section-4'>
@@ -113,6 +131,15 @@ const EditCourse = () => {
                         <div className='col-md-12 mt-5 mb-3'>
                             <div className='d-flex justify-content-between'>
                                 <h2 className='h4 mb-0 pb-0'>Edit Course</h2>
+                                <div>
+                                    {
+                                        (course.status === 1) ?
+                                            <Link onClick={() => changeStatus(course)} className='btn btn-warning me-2'>Unpublish</Link>
+                                            :
+                                            <Link onClick={() => changeStatus(course)} className='btn btn-primary me-2'>Publish</Link>
+                                    }
+                                    <Link to="/account/my-courses" className='btn btn-secondary'>Back</Link>
+                                </div>
                             </div>
                         </div>
                         <div className='col-lg-3 account-sidebar'>

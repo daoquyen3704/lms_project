@@ -1,27 +1,43 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
+const CourseEdit = ({ course, deleteCourse }) => {
 
-const CourseEdit = () => {
     return (
         <div className="col-md-4">
             <div className='card border-0'>
                 <div className='card-img-top'>
-                    <img src={`https://placehold.co/600x350?text=Web+Development`} alt="" className='img-fluid' />
+                    {
+                        course.status === 1 && <span className='fw-bold badge bg-success text-white position-absolute top-0 end-0 m-2'>Publish</span>
+                    }
+                    {
+                        course.status === 0 && <span className='fw-bold badge bg-light text-muted position-absolute top-0 end-0 m-2'>Draft</span>
+                    }
+                    {
+                        course.course_small_image && <img src={course.course_small_image} alt="" className='img-fluid' />
+                    }
+                    {
+                        course.course_small_image == '' && <img src={`https://placehold.co/600x350?text=${course.title}`} alt="" className='img-fluid' />
+                    }
                 </div>
                 <div className='card-body'>
                     <div className="card-title ">
-                        Web Development
+                        {course.title}
                     </div>
                     <div className="meta d-flex py-2">
-                        <div className="level">
-                            <div className="d-flex align-items-center">
-                                <div className="icon">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-briefcase" viewBox="0 0 16 16">
-                                        <path d="M6.5 1A1.5 1.5 0 0 0 5 2.5V3H1.5A1.5 1.5 0 0 0 0 4.5v8A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-8A1.5 1.5 0 0 0 14.5 3H11v-.5A1.5 1.5 0 0 0 9.5 1zm0 1h3a.5.5 0 0 1 .5.5V3H6v-.5a.5.5 0 0 1 .5-.5m1.886 6.914L15 7.151V12.5a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5V7.15l6.614 1.764a1.5 1.5 0 0 0 .772 0M1.5 4h13a.5.5 0 0 1 .5.5v1.616L8.129 7.948a.5.5 0 0 1-.258 0L1 6.116V4.5a.5.5 0 0 1 .5-.5" />
-                                    </svg>
+                        {
+                            course.level &&
+                            <div className="level">
+                                <div className="d-flex align-items-center">
+                                    <div className="icon">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-briefcase" viewBox="0 0 16 16">
+                                            <path d="M6.5 1A1.5 1.5 0 0 0 5 2.5V3H1.5A1.5 1.5 0 0 0 0 4.5v8A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-8A1.5 1.5 0 0 0 14.5 3H11v-.5A1.5 1.5 0 0 0 9.5 1zm0 1h3a.5.5 0 0 1 .5.5V3H6v-.5a.5.5 0 0 1 .5-.5m1.886 6.914L15 7.151V12.5a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5V7.15l6.614 1.764a1.5 1.5 0 0 0 .772 0M1.5 4h13a.5.5 0 0 1 .5.5v1.616L8.129 7.948a.5.5 0 0 1-.258 0L1 6.116V4.5a.5.5 0 0 1 .5-.5" />
+                                        </svg>
+                                    </div>
+                                    <div className="text ps-2">{course.level.name}</div>
                                 </div>
-                                <div className="text ps-2">Advance</div>
                             </div>
-                        </div>
+                        }
+
                         <div className="student ps-4">
                             <div className="d-flex align-items-center">
                                 <div className="icon">
@@ -47,7 +63,8 @@ const CourseEdit = () => {
                 <div className="card-footer bg-white">
                     <div className="d-flex py-2 justify-content-between align-items-center">
                         <div className="add-to-cart">
-                            <a href="/detail" className="btn btn-primary">Edit</a>
+                            <Link to={`/account/courses/edit/${course.id}`} className="btn btn-primary me-2">Edit</Link>
+                            <Link onClick={() => deleteCourse(course.id)} className="btn btn-danger">Delete</Link>
                         </div>
                     </div>
                 </div>

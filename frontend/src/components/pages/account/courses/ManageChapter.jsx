@@ -143,9 +143,9 @@ const ManageChapter = ({ course }) => {
             <div className='card-body p-4'>
                 <div className='d-flex justify-content-between'>
                     <h4 className='h5 mb-3'>Chapters</h4>
-                    <Link onClick={() => handleShowLessonModal(currentChapter)}>
+                    {/* <Link onClick={() => handleShowLessonModal(currentChapter)}>
                         <FaPlus size={12} /> <strong>Add Lesson</strong>
-                    </Link>
+                    </Link> */}
                 </div>
 
                 <form className='mb-4' onSubmit={handleSubmit(onSubmit)}>
@@ -221,6 +221,7 @@ const ManageChapter = ({ course }) => {
                     course={course}
                     addLessonToChapter={addLessonToChapter}
                     currentChapter={currentChapter}
+                    chapters={chapters}
                 />
 
                 <LessonSort

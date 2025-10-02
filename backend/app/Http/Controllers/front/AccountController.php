@@ -3,16 +3,24 @@
 namespace App\Http\Controllers\front;
 
 use App\Http\Controllers\Controller;
+use App\Models\Course;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
+use App\Services\RefreshTokenService;
 
 
 
 class AccountController extends Controller
 {
+    protected $refreshTokenService;
+
+    public function __construct(RefreshTokenService $refreshTokenService)
+    {
+        $this->refreshTokenService = $refreshTokenService;
+    }
     // Đăng ký
     public function register(Request $request)
     {
@@ -69,47 +77,113 @@ class AccountController extends Controller
             ], 401);
         }
 
-        $user = User::where('email', $request->email)->first();
-        if (!$user) {
-            return response()->json([
-                'status' => 404,
-                'message' => 'Tài khoản chưa tồn tại, vui lòng đăng ký!',
-            ], 404);
-        }
+        $user = JWTAuth::user();
+
+        // Tạo refresh token
+        $refreshToken = $this->refreshTokenService->createRefreshToken($user, $request);
+
 
         // Thành công -> trả token
         return response()->json([
-            'status'       => 200,
+            'status' => 200,
             'access_token' => $token,
-            'token_type'   => 'bearer',
-            'expires_in'   => JWTAuth::factory()->getTTL() * 60,
-            'user'         => JWTAuth::user(),
+            'refresh_token' => $refreshToken,
+            'token_type' => 'bearer',
+            'expires_in' => JWTAuth::factory()->getTTL() * 60,
+            'user' => $user,
         ], 200);
     }
     // Lấy thông tin user hiện tại
     public function me()
     {
-        return response()->json(JWTAuth::user());
+        $user = null;
+        try {
+            $user = JWTAuth::user();
+        } catch (\Exception $e) {
+            // ignore, will return null below
+        }
+
+        if (!$user) {
+            return response()->json([
+                'status' => 401,
+                'message' => 'Unauthenticated'
+            ], 401);
+        }
+
+        return response()->json($user);
     }
 
 
     // Đăng xuất
-    public function logout()
+    public function logout(Request $request)
     {
-        JWTAuth::invalidate(JWTAuth::getToken());
+        // Invalidate JWT token if present
+        try {
+            $token = JWTAuth::getToken();
+            if ($token) {
+                JWTAuth::invalidate($token);
+            }
+        } catch (\Exception $e) {
+            // ignore token invalidation errors to allow logout flow to continue
+        }
+
+        // Revoke refresh token if provided
+        $refreshToken = $request->input('refresh_token');
+        if ($refreshToken) {
+            $this->refreshTokenService->revokeRefreshToken($refreshToken);
+        }
+
         return response()->json(['message' => 'Successfully logged out']);
     }
 
 
     // Refresh token
-    public function refresh()
+    public function refresh(Request $request)
     {
-        $newToken = JWTAuth::refresh(JWTAuth::getToken());
+        $refreshToken = $request->input('refresh_token');
+
+        if (!$refreshToken) {
+            return response()->json([
+                'status' => 400,
+                'message' => 'Refresh token is required'
+            ], 400);
+        }
+
+        // Validate refresh token
+        $userRefreshToken = $this->refreshTokenService->validateRefreshToken($refreshToken);
+
+        if (!$userRefreshToken || !$userRefreshToken->user) {
+            return response()->json([
+                'status' => 401,
+                'message' => 'Invalid or expired refresh token'
+            ], 401);
+        }
+
+        $user = $userRefreshToken->user;
+
+        // Tạo access token mới
+        $newAccessToken = JWTAuth::fromUser($user);
+
+        // Tạo refresh token mới và revoke token cũ
+        $this->refreshTokenService->revokeRefreshToken($refreshToken);
+        $newRefreshToken = $this->refreshTokenService->createRefreshToken($user, $request);
 
         return response()->json([
-            'access_token' => $newToken,
-            'token_type'   => 'bearer',
-            'expires_in'   => JWTAuth::factory()->getTTL() * 60,
+            'access_token' => $newAccessToken,
+            'refresh_token' => $newRefreshToken,
+            'token_type' => 'bearer',
+            'expires_in' => JWTAuth::factory()->getTTL() * 60,
         ]);
+    }
+
+    public function courses(Request $request)
+    {
+        $course = Course::where('user_id', JWTAuth::user()->id)
+            ->with('level')
+            ->get();
+        return response()->json([
+            'status' => 200,
+            'data' => $course,
+        ], 200);
     }
 }
