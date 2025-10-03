@@ -13,18 +13,20 @@ export const AuthProvider = ({ children }) => {
         return localStorage.getItem("accessToken") || null;
     });
 
-    // Đăng nhập: lưu cả user và token
-    const login = (userData, accessToken) => {
+    // Đăng nhập: lưu cả user, access token và refresh token
+    const login = (userData, accessToken, refreshToken) => {
         localStorage.setItem("userInfoLms", JSON.stringify(userData));
         localStorage.setItem("accessToken", accessToken);
+        localStorage.setItem("refreshToken", refreshToken);
         setUser(userData);
         setToken(accessToken);
     };
 
-    // Đăng xuất: xoá user và token
+    // Đăng xuất: xoá user, access token và refresh token
     const logout = () => {
         localStorage.removeItem("userInfoLms");
         localStorage.removeItem("accessToken");
+        localStorage.removeItem("refreshToken");
         setUser(null);
         setToken(null);
     };

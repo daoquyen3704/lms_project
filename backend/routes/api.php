@@ -15,6 +15,11 @@ Route::post('/login', [AccountController::class, 'authenticate']);
 Route::post('/refresh', [AccountController::class, 'refresh']);
 Route::get('/fetch-categories', [HomeController::class, 'fetchCategories']);
 Route::get('/fetch-featured-courses', [HomeController::class, 'fetchFeaturedCourses']);
+// Route::get('/fetch-courses', [HomeController::class, 'courses']);
+Route::get('/fetch-levels', [HomeController::class, 'fetchLevels']);
+Route::get('/fetch-languages', [HomeController::class, 'fetchLanguages']);
+Route::get('/search', [HomeController::class, 'search']);
+
 
 // 🔐 Protected routes (JWT required)
 Route::middleware('auth:api')->group(function () {

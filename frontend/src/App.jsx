@@ -32,6 +32,7 @@ function App() {
           <Route path="/account/watch-course" element={<WatchCourse />} />
           <Route path="/account/change-password" element={<ChangePassword />} />
 
+
           <Route path="/account/dashboard" element={
             <RequiredAuth>
               <Dashboard />

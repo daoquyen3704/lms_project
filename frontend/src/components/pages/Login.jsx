@@ -23,6 +23,7 @@ const Login = () => {
             });
 
             const result = await res.json();
+            // console.log("Login response:", result);
 
             if (res.ok && result.status === 200) {
                 // Lưu token và user thông tin vào localStorage
@@ -36,7 +37,7 @@ const Login = () => {
                 localStorage.setItem("userInfoLms", JSON.stringify(userInfo));
 
                 // Cập nhật vào AuthContext
-                login(userInfo, result.access_token);
+                login(userInfo, result.access_token, result.refresh_token);
 
                 // Redirect đến Dashboard
                 navigate('/account/dashboard');

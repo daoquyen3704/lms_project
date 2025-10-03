@@ -4,6 +4,8 @@ export async function fetchJWT(endpoint, options = {}) {
     let token = localStorage.getItem("accessToken");
     let refreshToken = localStorage.getItem("refreshToken");
 
+    // console.log("Initial tokens:", { token, refreshToken });
+
     // Tạo headers cơ bản
     const headers = {
         "Accept": "application/json",
@@ -17,6 +19,8 @@ export async function fetchJWT(endpoint, options = {}) {
     }
 
     try {
+        // console.log("Making initial request to:", endpoint);
+
         // Thực hiện request đầu tiên
         let res = await fetch(endpoint, {
             ...options,
@@ -26,30 +30,35 @@ export async function fetchJWT(endpoint, options = {}) {
         // Nếu token hết hạn (401) và có refresh token
         if (res.status === 401 && refreshToken) {
             try {
-                // Gọi API refresh token
+                // console.log("Token expired, attempting refresh...");
+
+                // Gọi API refresh token với Bearer token
                 const refreshRes = await fetch(`${apiUrl}/refresh`, {
                     method: "POST",
                     headers: {
                         "Accept": "application/json",
                         "Content-Type": "application/json",
+                        "Authorization": `Bearer ${refreshToken}`
                     },
                     body: JSON.stringify({
                         refresh_token: refreshToken
                     }),
                 });
 
+                // console.log("Refresh response status:", refreshRes.status);
+
                 if (refreshRes.ok) {
                     const refreshData = await refreshRes.json();
+                    // console.log("Refresh response data:", refreshData);
 
                     // Nếu nhận được token mới
                     if (refreshData.access_token) {
+                        // console.log("Got new access token");
                         // Lưu token mới
                         localStorage.setItem("accessToken", refreshData.access_token);
                         if (refreshData.refresh_token) {
                             localStorage.setItem("refreshToken", refreshData.refresh_token);
-                        }
-
-                        // Retry request ban đầu với token mới
+                        }                        // Retry request ban đầu với token mới
                         return await fetch(endpoint, {
                             ...options,
                             headers: {
@@ -68,7 +77,7 @@ export async function fetchJWT(endpoint, options = {}) {
                 return res;
             } catch (refreshError) {
                 // Nếu có lỗi khi refresh token
-                console.error("Error refreshing token:", refreshError);
+                // console.error("Error refreshing token:", refreshError);
                 localStorage.removeItem("accessToken");
                 localStorage.removeItem("refreshToken");
                 localStorage.removeItem("userInfoLms");

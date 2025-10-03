@@ -408,6 +408,38 @@ footer {
     }
 }
 
+.pagination {
+    .page-item {
+        .page-link {
+            color: #1DA599;
+            border-radius: 6px; // bo tròn nhẹ
+            transition: all 0.2s ease;
+
+            &:hover {
+                background-color: #FEC748; // màu nền nhạt hơn
+                border-color: #FEC748;
+                color: #fff;
+            }
+        }
+
+        &.active {
+            .page-link {
+                background-color: #1DA599;
+                border-color: #1DA599;
+                color: #fff;
+            }
+        }
+
+        &.disabled {
+            .page-link {
+                color: #aaa;
+                background-color: #f8f9fa;
+                border-color: #dee2e6;
+            }
+        }
+    }
+}
+
 @media (max-width: 768px) {
     .section-1 {
         padding: 50px 0;
