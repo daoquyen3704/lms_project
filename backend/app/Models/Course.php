@@ -7,6 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 use App\Models\Chapter;
 use App\Models\User;
 use App\Models\Level;
+use App\Models\Category;
+use App\Models\Language;
+use App\Models\Outcome;
+use App\Models\Requirement;
 
 class Course extends Model
 {
@@ -23,7 +27,20 @@ class Course extends Model
 
     public function chapters()
     {
-        return $this->hasMany(Chapter::class);
+        return $this->hasMany(Chapter::class)
+            ->orderBy('sort_order', 'asc');
+    }
+
+    public function outcomes()
+    {
+        return $this->hasMany(Outcome::class)
+            ->orderBy('sort_order', 'asc');
+    }
+
+    public function requirements()
+    {
+        return $this->hasMany(Requirement::class)
+            ->orderBy('sort_order', 'asc');
     }
 
     public function user()
@@ -34,5 +51,15 @@ class Course extends Model
     public function level()
     {
         return $this->belongsTo(Level::class);
+    }
+
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
+    }
+
+    public function language()
+    {
+        return $this->belongsTo(Language::class);
     }
 }

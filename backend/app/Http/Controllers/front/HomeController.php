@@ -86,7 +86,7 @@ class HomeController extends Controller
         }
 
         // 📄 Pagination
-        $perPage = $request->per_page ?? 1;
+        $perPage = $request->per_page ?? 6;
         $courses = $query->paginate($perPage);
 
         return response()->json([
@@ -100,6 +100,51 @@ class HomeController extends Controller
                 'next_page_url' => $courses->nextPageUrl(),
                 'prev_page_url' => $courses->previousPageUrl(),
             ]
+        ], 200);
+    }
+
+    public function course($id)
+    {
+        $course = Course::where('id', $id)
+            ->withCount('chapters')
+            ->with([
+                'level',
+                'category',
+                'language',
+                'outcomes',
+                'requirements',
+                'chapters' => function ($query) {
+                    $query->withCount(['lessons' => function ($q) {
+                        $q->where('status', 1);
+                        $q->whereNotNull('video');
+                    }]);
+                    $query->withSum(['lessons' => function ($q) {
+                        $q->where('status', 1);
+                        $q->whereNotNull('video');
+                    }], 'duration');
+                },
+                'chapters.lessons' => function ($query) {
+                    $query->where('status', 1);
+                    $query->whereNotNull('video');
+                },
+                'user'
+            ])
+            ->first();
+
+        if (!$course) {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Course not found',
+            ], 404);
+        }
+
+        $totalDuration = $course->chapters->sum('lessons_sum_duration');
+        $totalLessons = $course->chapters->sum('lessons_count');
+        $course->total_duration = $totalDuration;
+        $course->total_lessons = $totalLessons;
+        return response()->json([
+            'status' => 200,
+            'data' => $course,
         ], 200);
     }
 }

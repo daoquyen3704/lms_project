@@ -19,6 +19,7 @@ Route::get('/fetch-featured-courses', [HomeController::class, 'fetchFeaturedCour
 Route::get('/fetch-levels', [HomeController::class, 'fetchLevels']);
 Route::get('/fetch-languages', [HomeController::class, 'fetchLanguages']);
 Route::get('/search', [HomeController::class, 'search']);
+Route::get('/fetch-course/{id}', [HomeController::class, 'course']);
 
 
 // 🔐 Protected routes (JWT required)

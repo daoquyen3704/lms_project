@@ -15,6 +15,7 @@ import { RequiredAuth } from './components/common/RequiredAuth'
 import CreateCourse from './components/pages/account/courses/CreateCourse'
 import EditCourse from './components/pages/account/courses/EditCourse'
 import EditLesson from './components/pages/account/courses/EditLesson'
+import Checkout from './components/pages/Checkout'
 
 function App() {
 
@@ -24,7 +25,8 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/courses" element={<Courses />} />
-          <Route path="/detail" element={<Detail />} />
+          <Route path="/detail/:id" element={<Detail />} />
+          <Route path="/checkout" element={<Checkout />} />
           <Route path="/account/login" element={<Login />} />
           <Route path="/account/register" element={<Register />} />
           <Route path="/account/my-courses" element={<MyCourses />} />

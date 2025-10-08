@@ -1,5 +1,6 @@
 import React from 'react'
 import HeroImg from '../../assets/images/hero-4.png'
+import { Link } from 'react-router-dom'
 
 const Hero = () => {
     return (
@@ -9,7 +10,7 @@ const Hero = () => {
                     <div className="col-md-6">
                         <h1 className="display-3 fw-bold">Learn Anytime, Anywhere</h1>
                         <p className="lead">Join our Learning Management System and explore a wide range of courses to enhance your skills and achieve your goals.</p>
-                        <a href="#courses" className="btn btn-white">Explore Courses</a>
+                        <Link to="/courses" className="btn btn-white">Explore Courses</Link>
                     </div>
                     <div className="col-md-6 text-center">
                         <img src={HeroImg} alt="Student Learning" className="img-fluid " />
